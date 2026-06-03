@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
         database = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
-            "umar_tracker_db_v5"
+            "levelup_db"
         ).fallbackToDestructiveMigration().build()
 
         repository = DashboardRepository(database.dashboardDao())
@@ -129,9 +129,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
+                val context = LocalContext.current
+                val levelUpPrefs = remember { context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE) }
                 var showSplash by remember { mutableStateOf(true) }
+                var onboardingDone by remember { mutableStateOf(levelUpPrefs.getBoolean("onboarding_done", false)) }
+
                 if (showSplash) {
                     SplashScreen(onFinished = { showSplash = false })
+                } else if (!onboardingDone) {
+                    OnboardingScreen(
+                        onComplete = { name ->
+                            levelUpPrefs.edit()
+                                .putString("user_name", name)
+                                .putBoolean("onboarding_done", true)
+                                .apply()
+                            onboardingDone = true
+                        }
+                    )
                 } else {
                     MainAppContainer(viewModel = viewModel, appOpenStreak = appOpenStreak)
                 }
@@ -198,7 +212,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                 .scale(animScale)
         ) {
             Text(
-                text = "UmarOS",
+                text = "LevelUp",
                 style = TextStyle(
                     brush = InstaGradient,
                     fontSize = 52.sp,
@@ -223,6 +237,262 @@ fun SplashScreen(onFinished: () -> Unit) {
         }
     }
 }
+
+// ============================================
+// ONBOARDING SCREEN
+// ============================================
+@Composable
+fun OnboardingScreen(onComplete: (String) -> Unit) {
+    val pagerState = rememberPagerState(initialPage = 0) { 3 }
+    var userName by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0A0A0A))
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 120.dp),
+            userScrollEnabled = true
+        ) { page ->
+            when (page) {
+                0 -> OnboardPage1()
+                1 -> OnboardPage2()
+                2 -> OnboardPage3(userName = userName, onNameChange = { userName = it })
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp, vertical = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(3) { idx ->
+                    val isActive = idx == pagerState.currentPage
+                    Box(
+                        modifier = Modifier
+                            .size(width = if (isActive) 22.dp else 6.dp, height = 6.dp)
+                            .background(
+                                if (isActive) InstaPurple else Color(0xFF333333),
+                                androidx.compose.foundation.shape.RoundedCornerShape(100)
+                            )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            val isLast = pagerState.currentPage == 2
+            Button(
+                onClick = {
+                    if (!isLast) scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                    else if (userName.isNotBlank()) onComplete(userName.trim())
+                },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isLast && userName.isNotBlank()) InstaPurple else Color(0xFF222222)
+                ),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
+            ) {
+                Text(
+                    text = if (isLast) "Get Started →" else "Next →",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+            if (!isLast) {
+                TextButton(
+                    onClick = { scope.launch { pagerState.animateScrollToPage(2) } },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Skip", color = Color(0xFF444444), fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OnboardPage1() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("⚡", fontSize = 72.sp)
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(
+            text = "LevelUp",
+            style = TextStyle(brush = InstaGradient, fontSize = 52.sp, fontWeight = FontWeight.Black, letterSpacing = (-2).sp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "Your Self-Improvement Hub",
+            color = Color(0xFF777777),
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            "Build habits. Crush goals. Track sleep.\nMaster your finances. All in one place.",
+            color = Color(0xFF555555),
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 22.sp
+        )
+    }
+}
+
+@Composable
+fun OnboardPage2() {
+    val features = listOf(
+        Triple("🎯", "Habits & Goals", "Daily habit streaks + a point-based goal tracking system"),
+        Triple("💰", "Finance Tracker", "Log income, expenses and transfers — see where money goes"),
+        Triple("😴", "Sleep Tracker", "Log sleep times and track your weekly sleep quality"),
+        Triple("📚", "Learn & Vocab", "Build your personal knowledge and vocabulary library")
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 36.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            "What's inside",
+            color = Color.White,
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Black
+        )
+        Spacer(modifier = Modifier.height(28.dp))
+        features.forEach { (icon, title, desc) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(icon, fontSize = 26.sp, modifier = Modifier.padding(end = 14.dp, top = 2.dp))
+                Column {
+                    Text(title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text(desc, color = MutedText, fontSize = 12.sp, lineHeight = 17.sp)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OnboardPage3(userName: String, onNameChange: (String) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Almost there!",
+            style = TextStyle(brush = InstaGradient, fontSize = 30.sp, fontWeight = FontWeight.Black)
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            "What should we call you?",
+            color = Color(0xFF888888),
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(40.dp))
+        OutlinedTextField(
+            value = userName,
+            onValueChange = onNameChange,
+            placeholder = {
+                Text(
+                    "Enter your name",
+                    color = Color(0xFF444444),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedContainerColor = Color(0xFF1A1A1A),
+                unfocusedContainerColor = Color(0xFF141414),
+                focusedIndicatorColor = InstaPurple,
+                unfocusedIndicatorColor = Color(0xFF333333)
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            textStyle = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = Color.White
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "Your name appears in the app header. You can change it any time in settings.",
+            color = Color(0xFF444444),
+            fontSize = 11.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 16.sp
+        )
+    }
+}
+
+// ============================================
+// GUIDE TIP COMPONENT
+// ============================================
+@Composable
+fun GuideTip(
+    text: String,
+    icon: String,
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D0D2B)),
+        border = BorderStroke(1.dp, InstaPurple.copy(alpha = 0.5f)),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(icon, fontSize = 22.sp)
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = text,
+                color = Color.White,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            TextButton(onClick = onDismiss) {
+                Text("Got it", color = InstaPurple, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+        }
+    }
+}
+
 
 // Global gradient brush
 val InstaGradient = Brush.linearGradient(
@@ -310,9 +580,15 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val context = LocalContext.current
+        val userName = remember {
+            context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+                .getString("user_name", "Welcome") ?: "Welcome"
+        }
+
         Column {
             Text(
-                text = "UMAR KHAN",
+                text = userName.uppercase(),
                 style = TextStyle(
                     fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Black,
@@ -322,7 +598,7 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                 )
             )
             Text(
-                text = "Personal Self-Improvement Hub",
+                text = "Self-Improvement Hub",
                 style = TextStyle(
                     color = MutedText,
                     fontSize = 10.sp,
@@ -429,6 +705,8 @@ data class TabItem(val id: String, val label: String, val icon: androidx.compose
 @Composable
 fun TodayTabScreen(viewModel: DashboardViewModel) {
     val context = LocalContext.current
+    val _guidePrefsToday = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+    var showGuideToday by remember { mutableStateOf(!_guidePrefsToday.getBoolean("guide_today", false)) }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val intents by viewModel.intents.collectAsStateWithLifecycle()
 
@@ -445,6 +723,18 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (showGuideToday) {
+            item {
+                GuideTip(
+                    text = "Tap ✓ to complete a habit. Tap + to add habits and daily intents. Your streak grows every day you stay consistent!",
+                    icon = "💡",
+                    onDismiss = {
+                        _guidePrefsToday.edit().putBoolean("guide_today", true).apply()
+                        showGuideToday = false
+                    }
+                )
+            }
+        }
         // Section: Daily Habits
         item {
             Row(
@@ -911,6 +1201,9 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
 fun GoalsTabScreen(viewModel: DashboardViewModel) {
     val goals by viewModel.goals.collectAsStateWithLifecycle()
     val pointLogs by viewModel.pointLogs.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val _guidePrefsGoals = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+    var showGuideGoals by remember { mutableStateOf(!_guidePrefsGoals.getBoolean("guide_goals", false)) }
 
     var showAddGoal by remember { mutableStateOf(false) }
     var showAddPointsId by remember { mutableStateOf<Long?>(null) }
@@ -931,6 +1224,18 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (showGuideGoals) {
+            item {
+                GuideTip(
+                    text = "Tap + to create a goal with a 'why'. Then tap '+ Log Action' on any goal to log hours — 1 hour = 1 point = 1% progress!",
+                    icon = "🎯",
+                    onDismiss = {
+                        _guidePrefsGoals.edit().putBoolean("guide_goals", true).apply()
+                        showGuideGoals = false
+                    }
+                )
+            }
+        }
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1876,6 +2181,9 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
 @Composable
 fun SleepTabScreen(viewModel: DashboardViewModel) {
     val sleepLogs by viewModel.sleepLogs.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val _guidePrefsSleep = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+    var showGuideSleep by remember { mutableStateOf(!_guidePrefsSleep.getBoolean("guide_sleep", false)) }
 
     var sleptHour by remember { mutableStateOf("01:00") }
     var wakeHour by remember { mutableStateOf("05:30") }
@@ -1895,6 +2203,18 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (showGuideSleep) {
+            item {
+                GuideTip(
+                    text = "Enter your sleep and wake times in HH:MM format (e.g. 23:30 and 06:30) then tap 'Log Routine Sleep' to track your night.",
+                    icon = "😴",
+                    onDismiss = {
+                        _guidePrefsSleep.edit().putBoolean("guide_sleep", true).apply()
+                        showGuideSleep = false
+                    }
+                )
+            }
+        }
         item {
             Text(
                 text = "Sleep Routine Calculator",

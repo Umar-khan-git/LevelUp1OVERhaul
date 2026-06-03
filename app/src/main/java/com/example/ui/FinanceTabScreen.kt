@@ -266,6 +266,9 @@ fun TransactionsSubScreen(
     selectedMonthKey: String,
     onMonthKeyChange: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val _guidePrefsMoney = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+    var showGuideMoney by remember { mutableStateOf(!_guidePrefsMoney.getBoolean("guide_money", false)) }
     var transCategoryTab by remember { mutableStateOf("daily") } // "daily", "calendar", "monthly"
     val calendar = Calendar.getInstance()
 
@@ -481,6 +484,33 @@ fun TransactionsSubScreen(
                 }
             }
 
+            if (showGuideMoney) {
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 72.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0D0D2B)),
+                    border = BorderStroke(1.dp, Color(0xFF7B2FBE).copy(alpha = 0.5f)),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("💰", fontSize = 22.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Tap the red + button to log a transaction. Choose Income, Expense or Transfer, enter amount, category and account.",
+                            color = Color.White, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        TextButton(onClick = {
+                            _guidePrefsMoney.edit().putBoolean("guide_money", true).apply()
+                            showGuideMoney = false
+                        }) {
+                            Text("Got it", color = Color(0xFF7B2FBE), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
             // High Fidelity Floating Action Button matching Screenshot Red/Orange theme color
             FloatingActionButton(
                 onClick = onAddTxClick,
@@ -2131,7 +2161,7 @@ fun AddTransactionDialog(
     val filteredDbCategories = remember(categories, type) {
         categories.filter { it.type == type }.map { it.name }
     }
-    val fallbackExpenseCats = listOf("Food", "Baqer", "Transport", "Eva VR", "emi TV", "LuLu", "wifi", "Tabby", "Tamara", "Appi", "Others")
+    val fallbackExpenseCats = listOf("Food & Dining", "Transport", "Shopping", "Entertainment", "Health & Fitness", "Utilities", "Education", "Personal Care", "Subscriptions", "Travel", "Other")
     val fallbackIncomeCats = listOf("Salary", "Freelance", "Other")
 
     val activeCats = if (filteredDbCategories.isNotEmpty()) filteredDbCategories else {
