@@ -1356,11 +1356,14 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            TextButton(
-                                onClick = { showAddPointsId = goal.id },
-                                contentPadding = PaddingValues(0.dp)
+                            Box(
+                                modifier = Modifier
+                                    .background(BrandAccent.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                                    .border(1.dp, BrandAccent.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                    .clickable { showAddPointsId = goal.id }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("+ Log Action", color = BrandAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("+ Log Action", color = BrandAccent, fontSize = 12.sp, fontWeight = FontWeight.Black)
                             }
 
                             IconButton(
@@ -2529,9 +2532,12 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
     val learningItems by viewModel.learningItems.collectAsStateWithLifecycle()
     val words by viewModel.words.collectAsStateWithLifecycle()
     val sleepLogs by viewModel.sleepLogs.collectAsStateWithLifecycle()
+    val transactions by viewModel.transactions.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val profilePrefs = context.getSharedPreferences("profile_prefs", android.content.Context.MODE_PRIVATE)
+    val levelUpPrefs = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+    val profileUserName = remember { levelUpPrefs.getString("user_name", "?") ?: "?" }
     var photoPath by remember { mutableStateOf(profilePrefs.getString("photo_path", null)) }
 
     val photoBitmap = remember(photoPath) {
@@ -2681,6 +2687,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                     ProfileAvatar(
                         photoBitmap = photoBitmap,
                         level = level,
+                        userName = profileUserName,
                         onTap = { photoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                     )
 
@@ -2746,6 +2753,105 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
             }
             Spacer(Modifier.height(8.dp))
         }
+
+        // ---- Finance Summary card ----
+        item {
+            val currentMonthPrefix = remember {
+                java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.US).format(java.util.Date())
+            }
+            val monthTx = remember(transactions, currentMonthPrefix) {
+                transactions.filter { it.dateString.startsWith(currentMonthPrefix) }
+            }
+            val monthIncome  = remember(monthTx) { monthTx.filter { it.type == "INCOME"  }.sumOf { it.amount } }
+            val monthExpense = remember(monthTx) { monthTx.filter { it.type == "EXPENSE" }.sumOf { it.amount } }
+            val monthSaved   = monthIncome - monthExpense
+            val savingsRate  = if (monthIncome > 0) (monthSaved / monthIncome * 100).coerceIn(0.0, 100.0) else 0.0
+
+            Column(modifier = Modifier.padding(horizontal = 12.dp)) {
+                Spacer(Modifier.height(8.dp))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "FINANCE THIS MONTH",
+                    color = MutedText,
+                    fontSize = 10.sp,
+                    letterSpacing = 2.sp,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = LayerCard),
+                    border = BorderStroke(1.dp, BorderHighlight),
+                    shape = RoundedCornerShape(18.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Column {
+                                Text("Income", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    String.format("DH %,.0f", monthIncome),
+                                    color = Color(0xFF29B6F6),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Spent", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    String.format("DH %,.0f", monthExpense),
+                                    color = Color(0xFFEF5350),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text("Saved", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    String.format("DH %,.0f", monthSaved.coerceAtLeast(0.0)),
+                                    color = Color(0xFF66BB6A),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+                        }
+                        // Savings rate bar
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Savings rate", color = MutedText, fontSize = 10.sp)
+                                Text(
+                                    "${savingsRate.toInt()}% of income saved",
+                                    color = if (savingsRate >= 20) Color(0xFF66BB6A) else Color(0xFFFFAB40),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Box(
+                                modifier = Modifier.fillMaxWidth().height(7.dp)
+                                    .clip(RoundedCornerShape(100))
+                                    .background(Color.White.copy(alpha = 0.08f))
+                            ) {
+                                val animRate by animateFloatAsState(
+                                    targetValue = (savingsRate / 100f).toFloat().coerceIn(0f, 1f),
+                                    animationSpec = tween(1000, easing = FastOutSlowInEasing),
+                                    label = "savings_rate"
+                                )
+                                Box(
+                                    modifier = Modifier.fillMaxHeight()
+                                        .fillMaxWidth(animRate)
+                                        .clip(RoundedCornerShape(100))
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                listOf(Color(0xFF29B6F6), Color(0xFF66BB6A))
+                                            )
+                                        )
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(24.dp))
+            }
+        }
     }
 }
 
@@ -2780,7 +2886,7 @@ fun ProfileStatNode(label: String, score: Int, accentLight: Color, accentDark: C
 }
 
 @Composable
-fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, onTap: () -> Unit) {
+fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, userName: String = "?", onTap: () -> Unit) {
     Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.size(100.dp)) {
         Box(
             contentAlignment = Alignment.Center,
@@ -2802,9 +2908,26 @@ fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, onTap: () -
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("U", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Black)
-                    Text("TAP", color = Color.White.copy(alpha = 0.45f), fontSize = 8.sp, letterSpacing = 1.sp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Icon(
+                        Icons.Default.CameraAlt,
+                        contentDescription = "Add photo",
+                        tint = Color.White.copy(alpha = 0.5f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        userName.trim().take(1).uppercase(),
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        "Add Photo",
+                        color = Color.White.copy(alpha = 0.45f),
+                        fontSize = 7.sp,
+                        letterSpacing = 0.5.sp
+                    )
                 }
             }
         }
@@ -2840,69 +2963,144 @@ fun RpgStatCard(title: String, value: String, accent: Color, modifier: Modifier 
 // ============================================
 @Composable
 fun WeekTabScreen(viewModel: DashboardViewModel) {
-    val sleepLogs by viewModel.sleepLogs.collectAsStateWithLifecycle()
-    val rEntity by viewModel.currentReflection.collectAsStateWithLifecycle()
+    val sleepLogs   by viewModel.sleepLogs.collectAsStateWithLifecycle()
+    val habits      by viewModel.habits.collectAsStateWithLifecycle()
+    val pointLogs   by viewModel.pointLogs.collectAsStateWithLifecycle()
+    val rEntity     by viewModel.currentReflection.collectAsStateWithLifecycle()
+
+    // Compute current week key dynamically
+    val currentWeekKey = remember {
+        java.text.SimpleDateFormat("yyyy-'W'ww", Locale.US).format(java.util.Date())
+    }
+    val weekDateRange = remember {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
+        val sdf = java.text.SimpleDateFormat("MMM d", Locale.US)
+        val start = sdf.format(cal.time)
+        cal.add(Calendar.DAY_OF_WEEK, 6)
+        val end = sdf.format(cal.time)
+        "$start – $end"
+    }
+
+    // Tell the ViewModel which week to watch
+    LaunchedEffect(currentWeekKey) { viewModel.setWeekKey(currentWeekKey) }
 
     var textReflection by remember { mutableStateOf("") }
-    var textIntention by remember { mutableStateOf("") }
+    var textIntention  by remember { mutableStateOf("") }
 
-    // Sync from database
     LaunchedEffect(rEntity) {
         if (rEntity != null) {
             textReflection = rEntity!!.reflection
-            textIntention = rEntity!!.intention
+            textIntention  = rEntity!!.intention
         }
     }
 
+    // This-week quick stats
+    val sdfDate = remember { java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US) }
+    val weekStartCal = remember { Calendar.getInstance().apply { set(Calendar.DAY_OF_WEEK, firstDayOfWeek) } }
+    val weekDates = remember { (0..6).map { i -> Calendar.getInstance().apply { time = weekStartCal.time; add(Calendar.DAY_OF_YEAR, i) }.let { sdfDate.format(it.time) } } }
+
+    val sleepThisWeek  = remember(sleepLogs, weekDates)  { sleepLogs.filter { it.dateString in weekDates } }
+    val avgSleepWeek   = if (sleepThisWeek.isEmpty()) 0f else sleepThisWeek.map { it.hoursSlept }.average().toFloat()
+    val habitsTotal    = habits.size
+    val habitsDone     = habits.count { it.isCompleted }
+    val actionsThisWeek = remember(pointLogs) {
+        val cutoff = weekStartCal.timeInMillis
+        pointLogs.count { it.dateAdded >= cutoff }
+    }
+
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Header
         item {
-            Text(
-                text = "Weekly Deep Reflection",
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text("Weekly Review", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text(weekDateRange, color = MutedText, fontSize = 11.sp)
+                }
+                Box(
+                    modifier = Modifier
+                        .background(InstaPurple.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                        .border(1.dp, InstaPurple.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                ) {
+                    Text(currentWeekKey, color = InstaPurple, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
 
-        // Emoji display based on sleeping logs
+        // Quick stats
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = LayerCard),
+                    border = BorderStroke(1.dp, BorderHighlight),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("😴", fontSize = 22.sp)
+                        Text(String.format("%.1f h", avgSleepWeek), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("Avg sleep", color = MutedText, fontSize = 9.sp)
+                    }
+                }
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = LayerCard),
+                    border = BorderStroke(1.dp, BorderHighlight),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("✅", fontSize = 22.sp)
+                        Text("$habitsDone / $habitsTotal", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("Habits today", color = MutedText, fontSize = 9.sp)
+                    }
+                }
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = LayerCard),
+                    border = BorderStroke(1.dp, BorderHighlight),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("🎯", fontSize = 22.sp)
+                        Text("$actionsThisWeek", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("Goal actions", color = MutedText, fontSize = 9.sp)
+                    }
+                }
+            }
+        }
+
+        // Sleep quality emoji row
         item {
             Card(
                 colors = CardDefaults.cardColors(containerColor = LayerCard),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(18.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("Daily Sleeping Quality (Emoji row)", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Sleep Quality — This Week", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         val dayNames = listOf("S", "M", "T", "W", "T", "F", "S")
                         for (i in 6 downTo 0) {
                             val d = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -i) }
-                            val dateStr = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US).format(d.time)
+                            val dateStr = sdfDate.format(d.time)
                             val log = sleepLogs.find { it.dateString == dateStr }
-
                             val emoji = when {
                                 log == null -> "—"
                                 log.hoursSlept >= 6.5f -> "😎"
                                 log.hoursSlept >= 5.0f -> "😐"
                                 else -> "😴"
                             }
-
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(dayNames.getOrElse(d.get(Calendar.DAY_OF_WEEK) - 1) { " " }, color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Text(emoji, fontSize = 18.sp, modifier = Modifier.padding(top = 4.dp))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(dayNames.getOrElse(d.get(Calendar.DAY_OF_WEEK) - 1) { " " }, color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(emoji, fontSize = 18.sp)
+                                if (log != null) {
+                                    Text("${log.hoursSlept}h", color = MutedText, fontSize = 8.sp)
+                                }
                             }
                         }
                     }
@@ -2910,55 +3108,48 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
             }
         }
 
-        // Reflection Note
+        // Reflection
         item {
             Card(
                 colors = CardDefaults.cardColors(containerColor = LayerCard),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(18.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier.padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text("Weekly Feedback & Review", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("✍️  Weekly Reflection", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
 
+                    Text("How was your week?", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     OutlinedTextField(
                         value = textReflection,
                         onValueChange = { textReflection = it },
-                        placeholder = { Text("How was your weekly schedule, productivity, and sleep balance?", color = MutedText, fontSize = 12.sp) },
+                        placeholder = { Text("What went well? What could be better? How do you feel?", color = MutedText, fontSize = 12.sp) },
                         colors = TextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
                             focusedContainerColor = Color(0xFF222222),
                             unfocusedContainerColor = Color(0xFF1E1E1E)
                         ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(110.dp)
+                        modifier = Modifier.fillMaxWidth().height(120.dp)
                     )
 
-                    Text("Next Week Action Steps", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-
+                    Text("Next week — top 3 actions", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     OutlinedTextField(
                         value = textIntention,
                         onValueChange = { textIntention = it },
-                        placeholder = { Text("What single action items will you tackle next week?", color = MutedText, fontSize = 12.sp) },
+                        placeholder = { Text("What will you focus on? Be specific.", color = MutedText, fontSize = 12.sp) },
                         colors = TextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
                             focusedContainerColor = Color(0xFF222222),
                             unfocusedContainerColor = Color(0xFF1E1E1E)
                         ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp)
+                        modifier = Modifier.fillMaxWidth().height(90.dp)
                     )
 
                     Button(
                         onClick = {
-                            viewModel.saveReflection("2026-W22", textReflection, textIntention)
+                            viewModel.saveReflection(currentWeekKey, textReflection, textIntention)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                         modifier = Modifier.fillMaxWidth()

@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 // Immersive Dark Theme Canvas & Layers
 val CanvasBg = Color(0xFF0D0D0D)
 val LayerCard = Color(0xFF1A1A1A)
-val BorderHighlight = Color(0x0DFFFFFF)
+val BorderHighlight = Color(0x26FFFFFF)
 val MutedText = Color(0xFF888888)
 
 // Signature Instagram Gradient Color Palette
