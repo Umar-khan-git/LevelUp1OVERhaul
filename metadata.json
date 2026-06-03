@@ -1,0 +1,6 @@
+{
+  "name": "Umar Tracker",
+  "description": "High-fidelity personal life log tracker, micro-gaming habit points system, sleep analysers, and arabic/japanese vocabulary cards built for Umar Khan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
