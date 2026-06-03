@@ -83,6 +83,7 @@ import java.util.Calendar
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: AppDatabase
