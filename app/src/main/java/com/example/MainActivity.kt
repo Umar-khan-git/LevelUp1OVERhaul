@@ -2909,12 +2909,7 @@ fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, userName: S
                 )
             } else {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(
-                        Icons.Default.CameraAlt,
-                        contentDescription = "Add photo",
-                        tint = Color.White.copy(alpha = 0.5f),
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Text("📷", fontSize = 18.sp)
                     Spacer(Modifier.height(2.dp))
                     Text(
                         userName.trim().take(1).uppercase(),
