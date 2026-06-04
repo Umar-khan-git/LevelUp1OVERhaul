@@ -216,20 +216,20 @@ fun SplashScreen(onFinished: () -> Unit) {
                 text = "LevelUp",
                 style = TextStyle(
                     brush = InstaGradient,
-                    fontSize = 52.sp,
+                    fontSize = 56.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = (-1).sp
                 )
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Personal Self-Improvement Hub",
-                color = Color(0xFF666666),
+                text = "Track It. Build It. Level Up.",
+                color = Color(0xFF888888),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
-                letterSpacing = 1.sp
+                letterSpacing = 0.5.sp
             )
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(56.dp))
             CircularProgressIndicator(
                 color = InstaOrange,
                 modifier = Modifier.size(22.dp),
