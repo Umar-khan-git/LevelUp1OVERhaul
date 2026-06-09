@@ -515,7 +515,7 @@ fun GradientText(
 
 @Composable
 fun MainAppContainer(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
-    val tabIds = listOf("today", "goals", "learning", "sleep", "stats", "finance", "week")
+    val tabIds = listOf("today", "goals", "learning", "stats", "sleep", "finance", "week")
     val pagerState = rememberPagerState(initialPage = 0) { tabIds.size }
     var selectedTab by rememberSaveable { mutableStateOf("today") }
 
@@ -652,8 +652,8 @@ fun BottomNavBar(
                 TabItem("today", "Today", Icons.Default.Home),
                 TabItem("goals", "Goals", Icons.Default.Star),
                 TabItem("learning", "Learn", Icons.Default.List),
-                TabItem("sleep", "Sleep", Icons.Default.Notifications),
                 TabItem("stats", "Profile", Icons.Default.Person),
+                TabItem("sleep", "Sleep", Icons.Default.Notifications),
                 TabItem("finance", "Money", Icons.Default.ShoppingCart),
                 TabItem("week", "Week", Icons.Default.Refresh)
             )
@@ -2598,157 +2598,280 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
     val goalTrackingRate = if (goals.isEmpty()) 0f else (goalsWithLogs.toFloat() / goals.size) * 100f
     val consistencyScore = ((minOf(100f, appOpenStreak / 30f * 100f) * 0.3f) + (habitCompletionPct * 0.4f) + (goalTrackingRate * 0.3f)).toInt().coerceIn(0, 100)
 
-    val totalXP = remember(habits, words, pointLogs, goals, learningItems) {
+    // ---- Roadmap state (persisted in SharedPreferences, no DB) ----
+    var roadmaps by remember { mutableStateOf(RoadmapStore.load(context)) }
+    val completedMilestones = remember(roadmaps) { roadmaps.sumOf { rm -> rm.steps.count { it.done } } }
+
+    // ---- Today's data for daily quests ----
+    val todayStr = remember { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date()) }
+    val sleptToday = remember(sleepLogs, todayStr) { sleepLogs.any { it.dateString == todayStr } }
+    val txToday = remember(transactions, todayStr) { transactions.any { it.dateString == todayStr } }
+    val goalActionToday = remember(pointLogs, todayStr) {
+        val dayStart = try { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).parse(todayStr)?.time ?: 0L } catch (e: Exception) { 0L }
+        pointLogs.any { it.dateAdded >= dayStart }
+    }
+    val quests = computeDailyQuests(completedHabits > 0, sleptToday, txToday, goalActionToday)
+    val questsDoneCount = quests.count { it.done }
+
+    // ---- Persist quest bonus XP once per day ----
+    val rpgPrefs = remember { context.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE) }
+    var bonusXp by remember { mutableStateOf(rpgPrefs.getInt("bonus_xp", 0)) }
+    LaunchedEffect(quests.map { it.done }.toString(), todayStr) {
+        val claimedKey = "claimed_$todayStr"
+        val claimed = (rpgPrefs.getStringSet(claimedKey, emptySet()) ?: emptySet()).toMutableSet()
+        var bonus = rpgPrefs.getInt("bonus_xp", 0)
+        var changed = false
+        quests.filter { it.done && it.id !in claimed }.forEach { bonus += it.xp; claimed.add(it.id); changed = true }
+        if (changed) {
+            rpgPrefs.edit().putInt("bonus_xp", bonus).putStringSet(claimedKey, claimed).apply()
+            bonusXp = bonus
+        }
+    }
+
+    // ---- XP / Level (base activity + milestones + quest bonus) ----
+    val baseXP = remember(habits, words, pointLogs, goals, learningItems) {
         habits.sumOf { it.streak } * 10 + words.size * 5 + pointLogs.size * 50 +
         goals.count { goal -> pointLogs.any { it.goalId == goal.id } } * 100 + learningItems.size * 25
     }
+    val totalXP = baseXP + completedMilestones * 100 + bonusXp
     val level = (totalXP / 1000) + 1
     val xpInLevel = totalXP % 1000
     val xpProgress = xpInLevel / 1000f
+
+    // ---- Title / tagline (editable, persisted) ----
+    var customTitle by remember { mutableStateOf(rpgPrefs.getString("user_title", "") ?: "") }
+    var tagline by remember { mutableStateOf(rpgPrefs.getString("user_tagline", "Building the best version of me.") ?: "Building the best version of me.") }
+    val displayTitle = if (customTitle.isNotBlank()) customTitle else titleForLevel(level)
+    var showEditIdentity by remember { mutableStateOf(false) }
+
+    // ---- Power level (composite) ----
+    val statSum = focusScore + disciplineScore + knowledgeScore + languagesScore + healthScore + consistencyScore
+    val powerLevel = statSum * 8 + level * 60 + completedMilestones * 40
+
+    // ---- Achievements (auto-unlock from data) ----
+    val habitMaxStreak = habits.maxOfOrNull { it.streak } ?: 0
+    val bestSleep = sleepLogs.maxOfOrNull { it.hoursSlept } ?: 0f
+    val monthSavedForAch = remember(transactions) {
+        val mp = java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.US).format(java.util.Date())
+        val mtx = transactions.filter { it.dateString.startsWith(mp) }
+        mtx.filter { it.type == "INCOME" }.sumOf { it.amount } - mtx.filter { it.type == "EXPENSE" }.sumOf { it.amount }
+    }
+    val achievements = computeAchievements(
+        streak = appOpenStreak, habitMaxStreak = habitMaxStreak, words = words.size,
+        learningCount = learningItems.size, studyHours = totalPointHours, bestSleep = bestSleep,
+        milestonesDone = completedMilestones, goalsTracked = goalsWithLogs, monthSaved = monthSavedForAch
+    )
+    val unlockedCount = achievements.count { it.unlocked }
+
+    // ---- Hexagon stats (clockwise from top) ----
+    val hexStats = listOf(
+        Triple("Focus", focusScore, Color(0xFFA855F7)),
+        Triple("Knowledge", knowledgeScore, Color(0xFF3B82F6)),
+        Triple("Languages", languagesScore, Color(0xFFEC4899)),
+        Triple("Health", healthScore, Color(0xFF22C55E)),
+        Triple("Consistency", consistencyScore, Color(0xFF06B6D4)),
+        Triple("Discipline", disciplineScore, Color(0xFFF97316))
+    )
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(CanvasBg),
         contentPadding = PaddingValues(bottom = 32.dp)
     ) {
-        // ---- Level header ----
+        // ===== HERO CARD =====
         item {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                border = BorderStroke(1.dp, BorderHighlight),
+                shape = RoundedCornerShape(22.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(
-                            brush = Brush.horizontalGradient(listOf(InstaPurple, BrandAccent, InstaOrange)),
-                            shape = RoundedCornerShape(20.dp)
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ProfileAvatar(
+                            photoBitmap = photoBitmap,
+                            level = level,
+                            userName = profileUserName,
+                            onTap = { photoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                         )
-                        .padding(horizontal = 22.dp, vertical = 6.dp)
-                ) {
-                    Text("LEVEL  $level", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp, letterSpacing = 2.sp)
-                }
-                Spacer(Modifier.height(6.dp))
-                Text("Character Profile", color = MutedText, fontSize = 12.sp, letterSpacing = 1.sp)
-                Spacer(Modifier.height(10.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text("XP", color = MutedText, fontSize = 10.sp, modifier = Modifier.width(22.dp))
-                    Box(
-                        modifier = Modifier.weight(1f).height(6.dp).clip(RoundedCornerShape(3.dp)).background(Color.White.copy(alpha = 0.1f))
+                        Spacer(Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("LEVEL $level", color = InstaPurple, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                            Text(
+                                displayTitle.uppercase(),
+                                style = TextStyle(brush = InstaGradient, fontSize = 25.sp, fontWeight = FontWeight.Black, letterSpacing = (-0.5).sp),
+                                maxLines = 1, overflow = TextOverflow.Ellipsis
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    tagline, color = MutedText, fontSize = 11.sp,
+                                    maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    "✏️", fontSize = 12.sp,
+                                    modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable { showEditIdentity = true }.padding(4.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("XP", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(22.dp))
+                        Box(modifier = Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(100)).background(Color.White.copy(alpha = 0.1f))) {
+                            val animXP by animateFloatAsState(xpProgress, tween(1000, easing = FastOutSlowInEasing), label = "xp")
+                            Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(animXP).clip(RoundedCornerShape(100)).background(Brush.horizontalGradient(listOf(InstaPurple, BrandAccent, InstaOrange))))
+                        }
+                        Text("${(xpProgress * 100).toInt()}%", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(start = 8.dp).width(36.dp))
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("$xpInLevel / 1000 XP", color = MutedText, fontSize = 9.sp)
+                        Text("Next level: ${1000 - xpInLevel} XP", color = MutedText, fontSize = 9.sp)
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF141414)).padding(vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        val animXP by animateFloatAsState(targetValue = xpProgress, animationSpec = tween(1000, easing = FastOutSlowInEasing), label = "xp")
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(animXP)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(Brush.horizontalGradient(listOf(InstaPurple, BrandAccent, InstaOrange)))
-                        )
+                        HeroStat("👑", "$level", "LEVEL")
+                        HeroStat("⚔️", "$powerLevel", "POWER")
+                        HeroStat("🔥", "$appOpenStreak", "STREAK")
+                        HeroStat("🏅", "$unlockedCount", "BADGES")
                     }
-                    Text("$xpInLevel/1000", color = MutedText, fontSize = 10.sp, modifier = Modifier.padding(start = 8.dp).width(55.dp))
                 }
             }
         }
 
-        // ---- Radial profile layout ----
+        // ===== POWER LEVEL =====
         item {
-            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-                // Radial web background
-                Canvas(modifier = Modifier.matchParentSize()) {
-                    val cx = size.width / 2f
-                    val cy = size.height / 2f
-                    val r = minOf(cx, cy) * 0.88f
-                    for (i in 0..5) {
-                        val a = Math.toRadians(i * 60.0 - 90.0)
-                        drawLine(Color.White.copy(alpha = 0.04f), Offset(cx, cy), Offset((cx + r * cos(a)).toFloat(), (cy + r * sin(a)).toFloat()), 1.dp.toPx())
-                    }
-                    listOf(0.3f, 0.6f, 0.9f).forEach { f ->
-                        drawCircle(Color.White.copy(alpha = 0.03f), r * f, Offset(cx, cy), style = Stroke(1.dp.toPx()))
-                    }
-                }
-
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Row 1 — Focus
-                    ProfileStatNode("Focus", focusScore, Color(0xFFCE93D8), Color(0xFF9B27AF))
-
-                    Spacer(Modifier.height(12.dp))
-
-                    // Row 2 — Discipline · · Knowledge
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                        ProfileStatNode("Discipline", disciplineScore, Color(0xFFFFAB91), Color(0xFFFF7043))
-                        Spacer(Modifier.width(72.dp))
-                        ProfileStatNode("Knowledge", knowledgeScore, Color(0xFF90CAF9), Color(0xFF1E88E5))
-                    }
-
-                    Spacer(Modifier.height(10.dp))
-
-                    // Row 3 — Avatar
-                    ProfileAvatar(
-                        photoBitmap = photoBitmap,
-                        level = level,
-                        userName = profileUserName,
-                        onTap = { photoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                border = BorderStroke(1.dp, BorderHighlight),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("POWER LEVEL", color = MutedText, fontSize = 10.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "$powerLevel",
+                        style = TextStyle(brush = Brush.horizontalGradient(listOf(InstaOrange, BrandAccent, InstaPurple)), fontSize = 44.sp, fontWeight = FontWeight.Black)
                     )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    // Row 4 — Health · · Languages
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                        ProfileStatNode("Health", healthScore, Color(0xFFA5D6A7), Color(0xFF43A047))
-                        Spacer(Modifier.width(72.dp))
-                        ProfileStatNode("Languages", languagesScore, Color(0xFFF48FB1), Color(0xFFE91E8C))
-                    }
-
-                    Spacer(Modifier.height(12.dp))
-
-                    // Row 5 — Consistency
-                    ProfileStatNode("Consistency", consistencyScore, Color(0xFF80DEEA), Color(0xFF00ACC1))
-
-                    Spacer(Modifier.height(12.dp))
+                    Text("Your combined strength across all stats", color = MutedText, fontSize = 10.sp)
                 }
             }
         }
 
-        // ---- Divider ----
+        // ===== CHARACTER STATS (hexagon) =====
         item {
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = Color.White.copy(alpha = 0.08f))
-            Spacer(Modifier.height(16.dp))
-            Text(
-                "STATS OVERVIEW",
-                color = MutedText,
-                fontSize = 10.sp,
-                letterSpacing = 2.sp,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
+            RpgSectionLabel("CHARACTER STATS", modifier = Modifier.padding(horizontal = 20.dp))
+            Spacer(Modifier.height(4.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                border = BorderStroke(1.dp, BorderHighlight),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                HexRadar(stats = hexStats, modifier = Modifier.fillMaxWidth().height(320.dp).padding(8.dp))
+            }
         }
 
-        // ---- Stats grid ----
+        // ===== DAILY QUESTS =====
         item {
+            Spacer(Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                RpgSectionLabel("DAILY QUESTS")
+                Text("$questsDoneCount/${quests.size} done", color = if (questsDoneCount == quests.size) Color(0xFF66BB6A) else MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(8.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                border = BorderStroke(1.dp, BorderHighlight),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                    quests.forEach { QuestRow(it) }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        if (questsDoneCount == quests.size) "🎉 All quests complete — come back tomorrow!" else "Complete your daily quests to earn bonus XP",
+                        color = MutedText, fontSize = 10.sp, modifier = Modifier.padding(vertical = 6.dp)
+                    )
+                }
+            }
+        }
+
+        // ===== ROADMAP =====
+        item {
+            Spacer(Modifier.height(16.dp))
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                RoadmapSection(
+                    roadmaps = roadmaps,
+                    onChange = { updated -> roadmaps = updated; RoadmapStore.save(context, updated) }
+                )
+            }
+        }
+
+        // ===== ACHIEVEMENTS =====
+        item {
+            Spacer(Modifier.height(16.dp))
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                RpgSectionLabel("ACHIEVEMENTS")
+                Text("$unlockedCount/${achievements.size}", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(10.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                border = BorderStroke(1.dp, BorderHighlight),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    achievements.chunked(4).forEach { row ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            row.forEach { AchievementBadge(it, modifier = Modifier.weight(1f)) }
+                            repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ===== JOURNEY =====
+        item {
+            Spacer(Modifier.height(16.dp))
+            RpgSectionLabel("JOURNEY", modifier = Modifier.padding(horizontal = 20.dp))
+            Spacer(Modifier.height(10.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                border = BorderStroke(1.dp, BorderHighlight),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            ) {
+                Box(modifier = Modifier.padding(16.dp)) {
+                    JourneyTimeline(currentLevel = level)
+                }
+            }
+        }
+
+        // ===== STATS OVERVIEW (compact) =====
+        item {
+            Spacer(Modifier.height(16.dp))
+            RpgSectionLabel("STATS OVERVIEW", modifier = Modifier.padding(horizontal = 20.dp))
+            Spacer(Modifier.height(10.dp))
             Column(modifier = Modifier.padding(horizontal = 12.dp)) {
                 Row(Modifier.fillMaxWidth()) {
-                    RpgStatCard("App Streak", "🔥 $appOpenStreak days", InstaPurple, Modifier.weight(1f))
-                    Spacer(Modifier.width(8.dp))
                     RpgStatCard("Total XP", "⚡ $totalXP", InstaOrange, Modifier.weight(1f))
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth()) {
-                    RpgStatCard("Avg Sleep", "😴 ${String.format("%.1f", avgSleep)} h/night", Color(0xFF1E88E5), Modifier.weight(1f))
-                    Spacer(Modifier.width(8.dp))
-                    RpgStatCard("Words Learned", "📚 ${words.size}", BrandAccent, Modifier.weight(1f))
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth()) {
-                    RpgStatCard("Active Goals", "🎯 ${goals.count { it.status == "ACTIVE" }}", Color(0xFF43A047), Modifier.weight(1f))
                     Spacer(Modifier.width(8.dp))
                     RpgStatCard("Study Hours", "⏱ ${String.format("%.1f", totalPointHours)} h", Color(0xFF00ACC1), Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth()) {
-                    RpgStatCard("Habit Rate", "✔ ${habitCompletionPct.toInt()}%", Color(0xFFFF7043), Modifier.weight(1f))
+                    RpgStatCard("Avg Sleep", "😴 ${String.format("%.1f", avgSleep)} h", Color(0xFF1E88E5), Modifier.weight(1f))
                     Spacer(Modifier.width(8.dp))
-                    RpgStatCard("Level", "🏆 $level", InstaPurple, Modifier.weight(1f))
+                    RpgStatCard("Words", "📚 ${words.size}", BrandAccent, Modifier.weight(1f))
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -2852,6 +2975,20 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                 Spacer(Modifier.height(24.dp))
             }
         }
+    }
+
+    if (showEditIdentity) {
+        EditIdentityDialog(
+            currentTitle = displayTitle,
+            currentTagline = tagline,
+            onDismiss = { showEditIdentity = false },
+            onSave = { newTitle, newTag ->
+                customTitle = newTitle
+                tagline = newTag
+                rpgPrefs.edit().putString("user_title", newTitle).putString("user_tagline", newTag).apply()
+                showEditIdentity = false
+            }
+        )
     }
 }
 
