@@ -24,9 +24,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -43,7 +40,6 @@ import com.example.ui.theme.MutedText
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.sin
 
 // ============================================================
@@ -203,70 +199,65 @@ fun HexRadar(stats: List<Triple<String, Int, Color>>, modifier: Modifier = Modif
     val anim = remember { Animatable(0f) }
     LaunchedEffect(Unit) { anim.animateTo(1f, tween(1100, easing = FastOutSlowInEasing)) }
 
-    Canvas(modifier = modifier) {
-        val n = stats.size
-        val cx = size.width / 2f
-        val cy = size.height / 2f
-        val maxR = min(cx, cy) * 0.62f
-        val angles = (0 until n).map { Math.PI / 2 - it * 2 * Math.PI / n }
+    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
+        val side = minOf(maxWidth, maxHeight)
+        val rDp = side * 0.30f
 
-        fun pt(frac: Float, ang: Double) =
-            Offset(cx + (frac * maxR * cos(ang)).toFloat(), cy - (frac * maxR * sin(ang)).toFloat())
+        // ---- The hexagon web + data polygon ----
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val cx = size.width / 2f
+            val cy = size.height / 2f
+            val r = rDp.toPx()
+            val angles = (0 until 6).map { Math.toRadians(90.0 - it * 60.0) }
+            fun pt(frac: Float, ang: Double) =
+                Offset(cx + (frac * r * cos(ang)).toFloat(), cy - (frac * r * sin(ang)).toFloat())
 
-        // Rings
-        listOf(0.25f, 0.5f, 0.75f, 1.0f).forEach { f ->
-            val ringPts = angles.map { pt(f, it) }
-            for (i in ringPts.indices) {
-                val a = ringPts[i]; val b = ringPts[(i + 1) % ringPts.size]
-                drawLine(Color.White.copy(alpha = if (f == 1.0f) 0.18f else 0.06f), a, b, strokeWidth = if (f == 1.0f) 2f else 1f)
+            // concentric hexagon rings
+            listOf(0.25f, 0.5f, 0.75f, 1f).forEach { f ->
+                val rp = angles.map { pt(f, it) }
+                for (i in rp.indices) {
+                    drawLine(Color.White.copy(alpha = if (f == 1f) 0.16f else 0.05f), rp[i], rp[(i + 1) % 6], strokeWidth = if (f == 1f) 2f else 1f)
+                }
+            }
+            // spokes
+            angles.forEach { drawLine(Color.White.copy(alpha = 0.06f), Offset(cx, cy), pt(1f, it), strokeWidth = 1f) }
+
+            // data polygon
+            val dataPts = stats.mapIndexed { i, s -> pt((s.second / 100f) * anim.value, angles[i]) }
+            val path = androidx.compose.ui.graphics.Path().apply {
+                dataPts.forEachIndexed { i, p -> if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y) }
+                close()
+            }
+            drawPath(path, brush = Brush.radialGradient(listOf(InstaPurple.copy(alpha = 0.5f), BrandAccent.copy(alpha = 0.28f)), center = Offset(cx, cy), radius = r))
+            drawPath(path, color = InstaPurple, style = Stroke(width = 3f))
+            dataPts.forEachIndexed { i, p ->
+                drawCircle(stats[i].third.copy(alpha = 0.25f), 10f, p)
+                drawCircle(stats[i].third, 5f, p)
+                drawCircle(Color.White, 2f, p)
             }
         }
-        // Axes
-        angles.forEach { drawLine(Color.White.copy(alpha = 0.08f), Offset(cx, cy), pt(1.0f, it), strokeWidth = 1f) }
 
-        // Data polygon
-        val dataPts = stats.mapIndexed { i, s -> pt((s.second / 100f) * anim.value, angles[i]) }
-        val path = androidx.compose.ui.graphics.Path().apply {
-            dataPts.forEachIndexed { i, p -> if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y) }
-            close()
-        }
-        drawPath(path, brush = Brush.linearGradient(listOf(InstaPurple.copy(alpha = 0.45f), BrandAccent.copy(alpha = 0.35f))))
-        drawPath(path, color = InstaPurple, style = Stroke(width = 3f))
-
-        // Vertices
-        dataPts.forEachIndexed { i, p ->
-            drawCircle(stats[i].third.copy(alpha = 0.25f), 11f, p)
-            drawCircle(stats[i].third, 5f, p)
-            drawCircle(Color.White, 2f, p)
-        }
-
-        // Labels (name + value) via native canvas
-        val nameSizePx = 11.sp.toPx()
-        val valSizePx = 16.sp.toPx()
-        drawIntoCanvas { canvas ->
-            stats.forEachIndexed { i, s ->
-                val lp = pt(1.34f, angles[i])
-                val align = when {
-                    lp.x < cx - 12 -> android.graphics.Paint.Align.RIGHT
-                    lp.x > cx + 12 -> android.graphics.Paint.Align.LEFT
-                    else -> android.graphics.Paint.Align.CENTER
-                }
-                val namePaint = android.graphics.Paint().apply {
-                    isAntiAlias = true
-                    color = android.graphics.Color.parseColor("#9CA3AF")
-                    textSize = nameSizePx
-                    textAlign = align
-                    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL)
-                }
-                val valPaint = android.graphics.Paint().apply {
-                    isAntiAlias = true
-                    color = s.third.toArgb()
-                    textSize = valSizePx
-                    textAlign = align
-                    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
-                }
-                canvas.nativeCanvas.drawText(s.first, lp.x, lp.y - 6f, namePaint)
-                canvas.nativeCanvas.drawText(s.second.toString(), lp.x, lp.y + 16f, valPaint)
+        // ---- Labels pinned to edges (top, bottom + 4 corners) ----
+        stats.forEachIndexed { i, s ->
+            val boxAlign = when (i) {
+                0 -> Alignment.TopCenter      // Focus      (top vertex)
+                1 -> Alignment.TopEnd         // Knowledge  (upper-right)
+                2 -> Alignment.BottomEnd      // Languages  (lower-right)
+                3 -> Alignment.BottomCenter   // Health     (bottom vertex)
+                4 -> Alignment.BottomStart    // Consistency(lower-left)
+                else -> Alignment.TopStart    // Discipline (upper-left)
+            }
+            val hAlign = when (i) {
+                1, 2 -> Alignment.End
+                4, 5 -> Alignment.Start
+                else -> Alignment.CenterHorizontally
+            }
+            Column(
+                modifier = Modifier.align(boxAlign),
+                horizontalAlignment = hAlign
+            ) {
+                Text(s.first, color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                Text("${s.second}", color = s.third, fontSize = 20.sp, fontWeight = FontWeight.Black)
             }
         }
     }

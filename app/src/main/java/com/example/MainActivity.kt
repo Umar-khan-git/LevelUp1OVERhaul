@@ -2774,7 +2774,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                 shape = RoundedCornerShape(18.dp),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                HexRadar(stats = hexStats, modifier = Modifier.fillMaxWidth().height(320.dp).padding(8.dp))
+                HexRadar(stats = hexStats, modifier = Modifier.fillMaxWidth().height(360.dp).padding(14.dp))
             }
         }
 
