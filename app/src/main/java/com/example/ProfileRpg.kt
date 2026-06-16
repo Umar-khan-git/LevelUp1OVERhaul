@@ -25,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -94,6 +95,136 @@ object RoadmapStore {
             arr.put(o)
         }
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, arr.toString()).apply()
+    }
+}
+
+// ============================================================
+// MOTTO STORE  (personal motivation quotes — SharedPreferences)
+// ============================================================
+object MottoStore {
+    private const val PREFS = "levelup_rpg"
+    private const val KEY = "mottos"
+
+    fun load(context: Context): List<String> {
+        val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null) ?: return emptyList()
+        return try {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).map { arr.getString(it) }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun save(context: Context, mottos: List<String>) {
+        val arr = JSONArray()
+        mottos.forEach { arr.put(it) }
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, arr.toString()).apply()
+    }
+}
+
+@Composable
+fun MottoCard(mottos: List<String>, onChange: (List<String>) -> Unit) {
+    var showAdd by remember { mutableStateOf(false) }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF12091F)),
+        border = BorderStroke(1.dp, InstaPurple.copy(alpha = 0.4f)),
+        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier.fillMaxWidth().animateContentSize()
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("💬  MY MOTTO", color = MutedText, fontSize = 10.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
+                Box(
+                    modifier = Modifier
+                        .background(InstaPurple.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                        .clickable { showAdd = true }
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                ) {
+                    Text("+ Add", color = InstaPurple, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            if (mottos.isEmpty()) {
+                Text(
+                    "Add a quote or motto that keeps you going. It'll greet you here every week.",
+                    color = MutedText, fontSize = 12.sp, lineHeight = 17.sp
+                )
+            } else {
+                mottos.forEachIndexed { i, quote ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text("“", color = InstaPurple, fontSize = 26.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(end = 6.dp))
+                        Text(
+                            quote,
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            fontStyle = FontStyle.Italic,
+                            lineHeight = 21.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            "✕",
+                            color = MutedText,
+                            fontSize = 13.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .clickable { onChange(mottos.filterIndexed { idx, _ -> idx != i }) }
+                                .padding(6.dp)
+                        )
+                    }
+                    if (i < mottos.lastIndex) {
+                        androidx.compose.material3.HorizontalDivider(color = Color.White.copy(alpha = 0.06f))
+                    }
+                }
+            }
+        }
+    }
+
+    if (showAdd) {
+        var text by remember { mutableStateOf("") }
+        Dialog(onDismissRequest = { showAdd = false }) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                shape = RoundedCornerShape(20.dp),
+                border = BorderStroke(1.dp, BorderHighlight),
+                modifier = Modifier.fillMaxWidth().padding(8.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("Add a Motto", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = { text = it },
+                        placeholder = { Text("e.g. Discipline beats motivation.", color = MutedText, fontSize = 12.sp) },
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                            focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { if (text.isNotBlank()) { onChange(mottos + text.trim()); showAdd = false } },
+                            colors = ButtonDefaults.buttonColors(containerColor = InstaPurple),
+                            modifier = Modifier.weight(1f)
+                        ) { Text("Add", color = Color.White, fontWeight = FontWeight.Bold) }
+                        Button(
+                            onClick = { showAdd = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            modifier = Modifier.weight(1f)
+                        ) { Text("Cancel", color = Color.White) }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -518,42 +649,22 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                             )
                         }
 
-                        Spacer(Modifier.height(12.dp))
-                        rm.steps.forEachIndexed { idx, step ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onChange(roadmaps.map { r ->
-                                            if (r.id == rm.id) r.copy(steps = r.steps.mapIndexed { i, s -> if (i == idx) s.copy(done = !s.done) else s })
-                                            else r
-                                        })
-                                    }
-                                    .padding(vertical = 7.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.size(22.dp).clip(CircleShape)
-                                        .background(if (step.done) Brush.linearGradient(listOf(InstaPurple, BrandAccent)) else Brush.linearGradient(listOf(Color(0xFF222222), Color(0xFF222222))))
-                                        .border(1.dp, if (step.done) Color.Transparent else Color(0xFF3A3A3A), CircleShape)
-                                ) {
-                                    if (step.done) Text("✓", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Black)
-                                    else Text("${idx + 1}", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(14.dp))
+                        if (rm.steps.isEmpty()) {
+                            Text("No steps yet — add the milestones on your path.", color = MutedText, fontSize = 11.sp)
+                        } else {
+                            RoadmapTrail(
+                                steps = rm.steps,
+                                onToggle = { idx ->
+                                    onChange(roadmaps.map { r ->
+                                        if (r.id == rm.id) r.copy(steps = r.steps.mapIndexed { i, s -> if (i == idx) s.copy(done = !s.done) else s })
+                                        else r
+                                    })
                                 }
-                                Spacer(Modifier.width(12.dp))
-                                Text(
-                                    step.title,
-                                    color = if (step.done) MutedText else Color.White,
-                                    fontSize = 13.sp,
-                                    textDecoration = if (step.done) TextDecoration.LineThrough else TextDecoration.None,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                if (step.done) Text("+100", color = Color(0xFF66BB6A), fontSize = 10.sp, fontWeight = FontWeight.Black)
-                            }
+                            )
                         }
 
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(8.dp))
                         Text(
                             "+ Add step",
                             color = InstaPurple,
@@ -590,6 +701,70 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                 addStepFor = null
             }
         )
+    }
+}
+
+// A compact horizontal "trail" of milestone nodes (like a path on a map).
+// Scrolls sideways instead of growing tall; tap a node to mark it done.
+@Composable
+fun RoadmapTrail(steps: List<RoadmapStep>, onToggle: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        steps.forEachIndexed { i, step ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(76.dp)) {
+                Box(modifier = Modifier.fillMaxWidth().height(42.dp), contentAlignment = Alignment.Center) {
+                    if (i != 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .fillMaxWidth(0.5f)
+                                .height(3.dp)
+                                .background(if (steps[i - 1].done) InstaPurple else Color(0xFF2A2A2A))
+                        )
+                    }
+                    if (i != steps.lastIndex) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .fillMaxWidth(0.5f)
+                                .height(3.dp)
+                                .background(if (step.done) InstaPurple else Color(0xFF2A2A2A))
+                        )
+                    }
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (step.done) Brush.linearGradient(listOf(InstaPurple, BrandAccent))
+                                else Brush.linearGradient(listOf(Color(0xFF1E1E1E), Color(0xFF1E1E1E)))
+                            )
+                            .border(if (step.done) 0.dp else 1.dp, if (step.done) Color.Transparent else Color(0xFF3A3A3A), CircleShape)
+                            .clickable { onToggle(i) }
+                    ) {
+                        if (step.done) Text("✓", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                        else Text("${i + 1}", color = MutedText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    step.title,
+                    color = if (step.done) MutedText else Color.White,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 12.sp
+                )
+            }
+        }
     }
 }
 

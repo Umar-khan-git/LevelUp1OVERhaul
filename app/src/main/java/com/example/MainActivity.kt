@@ -3284,6 +3284,8 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
     val habits      by viewModel.habits.collectAsStateWithLifecycle()
     val pointLogs   by viewModel.pointLogs.collectAsStateWithLifecycle()
     val rEntity     by viewModel.currentReflection.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    var mottos by remember { mutableStateOf(MottoStore.load(context)) }
 
     // Compute current week key dynamically
     val currentWeekKey = remember {
@@ -3346,6 +3348,14 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                     Text(currentWeekKey, color = InstaPurple, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
             }
+        }
+
+        // Personal motto / motivation
+        item {
+            MottoCard(
+                mottos = mottos,
+                onChange = { updated -> mottos = updated; MottoStore.save(context, updated) }
+            )
         }
 
         // Quick stats
