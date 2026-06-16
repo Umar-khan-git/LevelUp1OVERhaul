@@ -664,6 +664,15 @@ fun EditTransactionDialog(
     var category by remember { mutableStateOf(tx.category) }
     var account by remember { mutableStateOf(tx.account) }
     var note by remember { mutableStateOf(tx.note) }
+    val context = LocalContext.current
+    var dateMillis by remember {
+        mutableStateOf(
+            try { SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(tx.dateString)?.time ?: System.currentTimeMillis() }
+            catch (e: Exception) { System.currentTimeMillis() }
+        )
+    }
+    val dateLabel = remember(dateMillis) { SimpleDateFormat("dd/MM/yyyy (EEE)", Locale.getDefault()).format(Date(dateMillis)) }
+    val dateFormatted = remember(dateMillis) { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(dateMillis)) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -689,6 +698,33 @@ fun EditTransactionDialog(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
+
+                // Date row (tap to change / backdate)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val cal = Calendar.getInstance().apply { timeInMillis = dateMillis }
+                            android.app.DatePickerDialog(
+                                context,
+                                { _, y, m, d ->
+                                    val c = Calendar.getInstance()
+                                    c.set(y, m, d)
+                                    dateMillis = c.timeInMillis
+                                },
+                                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
+                            ).show()
+                        }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Date", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(dateLabel, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date", tint = Color(0xFFFD5A4E), modifier = Modifier.size(18.dp))
+                    }
+                }
 
                 TextField(
                     value = amount,
@@ -760,7 +796,8 @@ fun EditTransactionDialog(
                                         amount = newAmount,
                                         category = category.trim(),
                                         account = account.trim(),
-                                        note = note.trim()
+                                        note = note.trim(),
+                                        dateString = dateFormatted
                                     )
                                 )
                             }
@@ -2168,13 +2205,13 @@ fun AddTransactionDialog(
         if (type == "EXPENSE") fallbackExpenseCats else fallbackIncomeCats
     }
 
-    val dateFormatted = remember {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        sdf.format(Date())
+    val context = LocalContext.current
+    var selectedDateMillis by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
+    val dateFormatted = remember(selectedDateMillis) {
+        SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(selectedDateMillis))
     }
-    val dateLabel = remember {
-        val sdf = SimpleDateFormat("dd/MM/yyyy (EEE) h:mm a", Locale.getDefault())
-        sdf.format(Date())
+    val dateLabel = remember(selectedDateMillis) {
+        SimpleDateFormat("dd/MM/yyyy (EEE)", Locale.getDefault()).format(Date(selectedDateMillis))
     }
 
     LaunchedEffect(accounts) {
@@ -2282,15 +2319,29 @@ fun AddTransactionDialog(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // DATE ROW
+                // DATE ROW (tap to pick / backdate)
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val cal = Calendar.getInstance().apply { timeInMillis = selectedDateMillis }
+                            android.app.DatePickerDialog(
+                                context,
+                                { _, y, m, d ->
+                                    val c = Calendar.getInstance()
+                                    c.set(y, m, d)
+                                    selectedDateMillis = c.timeInMillis
+                                },
+                                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
+                            ).show()
+                        }
+                        .padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Date", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(80.dp))
                     Text(dateLabel, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                    Icon(Icons.Default.Refresh, contentDescription = "Repeat icon", tint = MutedText, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.DateRange, contentDescription = "Pick date", tint = Color(0xFFFD5A4E), modifier = Modifier.size(18.dp))
                 }
 
                 HorizontalDivider(color = BorderHighlight)
