@@ -1,6 +1,7 @@
 package com.example
 
 import android.content.Context
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -432,7 +433,7 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
     var showAdd by remember { mutableStateOf(false) }
     var addStepFor by remember { mutableStateOf<String?>(null) }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().animateContentSize()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

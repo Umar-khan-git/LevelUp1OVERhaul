@@ -27,6 +27,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import java.text.SimpleDateFormat
@@ -787,6 +789,14 @@ fun BottomNavBar(
 
             tabItems.forEach { item ->
                 val isSelected = selectedTab == item.id
+                val navColor by animateColorAsState(
+                    targetValue = if (isSelected) Color.White else MutedText,
+                    animationSpec = tween(250), label = "navColor_${item.id}"
+                )
+                val indicatorWidth by animateDpAsState(
+                    targetValue = if (isSelected) 34.dp else 0.dp,
+                    animationSpec = tween(250, easing = FastOutSlowInEasing), label = "navInd_${item.id}"
+                )
                 Column(
                     modifier = Modifier
                         .clickable { onTabSelected(item.id) }
@@ -795,28 +805,23 @@ fun BottomNavBar(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    if (isSelected) {
-                        Box(
-                            modifier = Modifier
-                                .width(34.dp)
-                                .height(6.dp)
-                                .background(InstaGradient, shape = RoundedCornerShape(100))
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(6.dp))
-                    }
-
+                    Box(
+                        modifier = Modifier
+                            .width(indicatorWidth)
+                            .height(6.dp)
+                            .background(InstaGradient, shape = RoundedCornerShape(100))
+                    )
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
-                        tint = if (isSelected) Color.White else MutedText,
+                        tint = navColor,
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
                         text = item.label,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) Color.White else MutedText
+                        color = navColor
                     )
                 }
             }
