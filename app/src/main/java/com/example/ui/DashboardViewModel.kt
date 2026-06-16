@@ -213,129 +213,31 @@ class DashboardViewModel(
         }
     }
 
-    // --- Helper for Default Population ---
+    // --- Helper for Default Population (minimal — just functional scaffolding) ---
     private suspend fun populateDefaultData() {
-        // Compute dates relative to today so seed data always looks current
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
-        val cal = java.util.Calendar.getInstance()
-        val today = sdf.format(cal.time)
-        fun daysAgo(n: Int): String {
-            val c = java.util.Calendar.getInstance()
-            c.add(java.util.Calendar.DAY_OF_YEAR, -n)
-            return sdf.format(c.time)
-        }
-        val year = cal.get(java.util.Calendar.YEAR)
-        val month = java.lang.String.format("%02d", cal.get(java.util.Calendar.MONTH) + 1)
-
-        // 1. Default Habits
-        val defaultHabits = listOf(
-            HabitEntity(name = "Morning workout (15+ min)", isCompleted = false, streak = 3),
-            HabitEntity(name = "Read for 20 minutes", isCompleted = false, streak = 5),
-            HabitEntity(name = "Drink 2L of water", isCompleted = false, streak = 1),
-            HabitEntity(name = "No screens 30 min before bed", isCompleted = false, streak = 0)
-        )
-        defaultHabits.forEach { repository.insertHabit(it) }
-
-        // 2. Default Intents
-        val defaultIntents = listOf(
-            IntentEntity(name = "Exercise every day — no excuses", isCompleted = false),
-            IntentEntity(name = "Eat a healthy meal today", isCompleted = true),
-            IntentEntity(name = "Sleep 7+ hours tonight", isCompleted = false),
-            IntentEntity(name = "Spend 30 min learning something new", isCompleted = true),
-            IntentEntity(name = "Practice gratitude — write 3 things", isCompleted = false)
-        )
-        defaultIntents.forEach { repository.insertIntent(it) }
-
-        // 3. Default Goals
-        val goalIds = listOf(
-            repository.insertGoal(GoalEntity(name = "Build a consistent fitness habit", why = "More energy and confidence", status = "ACTIVE")),
-            repository.insertGoal(GoalEntity(name = "Learn a new skill", why = "Career growth and fulfilment", status = "ACTIVE")),
-            repository.insertGoal(GoalEntity(name = "Save DH 5,000 this year", why = "Financial security and freedom", status = "ACTIVE")),
-            repository.insertGoal(GoalEntity(name = "Read 12 books this year", why = "Knowledge and perspective", status = "NEXT")),
-            repository.insertGoal(GoalEntity(name = "Start a side project", why = "Creative outlet and extra income", status = "SOMEDAY"))
-        )
-        repository.insertPointLog(PointLogEntity(goalId = goalIds[0], activity = "Morning run — 30 min", hours = 2f))
-        repository.insertPointLog(PointLogEntity(goalId = goalIds[0], activity = "Home workout — upper body", hours = 1.5f))
-        repository.insertPointLog(PointLogEntity(goalId = goalIds[1], activity = "Online course — Chapter 3", hours = 2f))
-        repository.insertPointLog(PointLogEntity(goalId = goalIds[1], activity = "Practice exercises completed", hours = 1f))
-        repository.insertPointLog(PointLogEntity(goalId = goalIds[2], activity = "Monthly savings transfer done", hours = 5f))
-
-        // 4. Default Learning Items
-        val defaultLearning = listOf(
-            LearningEntity(name = "Online Programming Course", subtext = "Working through exercises daily", category = "IT", status = "ACTIVE"),
-            LearningEntity(name = "Public Speaking", subtext = "Watching talks and practising delivery", category = "COURSES", status = "ACTIVE"),
-            LearningEntity(name = "Machine Learning Basics", subtext = "After current course finishes", category = "IT", status = "NEXT"),
-            LearningEntity(name = "A New Language", subtext = "Pick one and start", category = "LANGUAGES", status = "SOMEDAY")
-        )
-        defaultLearning.forEach { repository.insertLearning(it) }
-
-        // 5. Default Words
-        val defaultWords = listOf(
-            WordEntity(word = "مرحبا (Marhaban)", meaning = "Hello", category = "ARABIC"),
-            WordEntity(word = "شكرا (Shukran)", meaning = "Thank you", category = "ARABIC"),
-            WordEntity(word = "صباح الخير (Sabah al-khair)", meaning = "Good morning", category = "ARABIC"),
-            WordEntity(word = "ありがとう (Arigatou)", meaning = "Thank you", category = "JAPANESE"),
-            WordEntity(word = "こんにちは (Konnichiwa)", meaning = "Hello / Good afternoon", category = "JAPANESE"),
-            WordEntity(word = "Discipline", meaning = "Training oneself to follow rules consistently", category = "ENGLISH"),
-            WordEntity(word = "Perseverance", meaning = "Continued effort despite difficulty or delay", category = "ENGLISH")
-        )
-        defaultWords.forEach { repository.insertWord(it) }
-
-        // 6. Default Sleep Logs (last 7 days, relative to today)
-        val defaultSleeps = listOf(
-            SleepLogEntity(dateString = today,       sleptAt = "23:30", wokeUp = "06:45", hoursSlept = 7.3f),
-            SleepLogEntity(dateString = daysAgo(1),  sleptAt = "00:15", wokeUp = "06:30", hoursSlept = 6.3f),
-            SleepLogEntity(dateString = daysAgo(2),  sleptAt = "23:00", wokeUp = "07:00", hoursSlept = 8.0f),
-            SleepLogEntity(dateString = daysAgo(3),  sleptAt = "01:00", wokeUp = "06:30", hoursSlept = 5.5f),
-            SleepLogEntity(dateString = daysAgo(4),  sleptAt = "23:45", wokeUp = "07:15", hoursSlept = 7.5f),
-            SleepLogEntity(dateString = daysAgo(5),  sleptAt = "00:30", wokeUp = "06:00", hoursSlept = 5.5f),
-            SleepLogEntity(dateString = daysAgo(6),  sleptAt = "22:30", wokeUp = "06:30", hoursSlept = 8.0f)
-        )
-        defaultSleeps.forEach { repository.insertSleepLog(it) }
-
-        // 7. Default Reflection
-        repository.insertReflection(
-            ReflectionEntity(
-                weekKey = java.text.SimpleDateFormat("yyyy-'W'ww", java.util.Locale.US).format(cal.time),
-                reflection = "Good start to using LevelUp! Habits are building, sleep is improving.",
-                intention = "Stay consistent with habits this week. Log every expense. Sleep before midnight."
-            )
-        )
-
-        // 8. Default Money Accounts
+        // Starter accounts so the Money tab works immediately (zero balances — edit to your own).
         val defaultAccounts = listOf(
-            MoneyAccountEntity(name = "Wallet",       type = "CASH", balance = 500.0),
-            MoneyAccountEntity(name = "Savings Jar",  type = "CASH", balance = 1500.0),
-            MoneyAccountEntity(name = "Bank Account", type = "BANK", balance = 4200.0),
-            MoneyAccountEntity(name = "Credit Card",  type = "CARD", balance = 0.0)
+            MoneyAccountEntity(name = "Cash", type = "CASH", balance = 0.0),
+            MoneyAccountEntity(name = "Bank Account", type = "BANK", balance = 0.0),
+            MoneyAccountEntity(name = "Card", type = "CARD", balance = 0.0)
         )
         defaultAccounts.forEach { repository.insertMoneyAccount(it) }
 
-        // 9. Default Categories
+        // Starter spending / income categories (rename, delete or add your own anytime).
         val defaultExpenseCats = listOf(
             "Food & Dining", "Transport", "Shopping", "Entertainment",
             "Health & Fitness", "Utilities", "Education", "Personal Care",
             "Subscriptions", "Travel", "Other"
         )
         defaultExpenseCats.forEach { repository.insertCategory(CategoryEntity(name = it, type = "EXPENSE")) }
-        val defaultIncomeCats = listOf("Salary", "Freelance", "Investment Returns", "Gift", "Other")
+        val defaultIncomeCats = listOf("Salary", "Freelance", "Investment", "Gift", "Other")
         defaultIncomeCats.forEach { repository.insertCategory(CategoryEntity(name = it, type = "INCOME")) }
+    }
 
-        // 10. Default Transactions (current month, relative dates)
-        val d = "$year-$month-"
-        val defaultTx = listOf(
-            TransactionEntity(type = "INCOME",   amount = 5000.0, category = "Salary",         account = "Bank Account", dateString = "${d}01", timeString = "09:00 am", note = "Monthly salary"),
-            TransactionEntity(type = "EXPENSE",  amount = 120.0,  category = "Food & Dining",   account = "Bank Account", dateString = "${d}02", timeString = "01:00 pm", note = "Groceries"),
-            TransactionEntity(type = "EXPENSE",  amount = 45.0,   category = "Transport",        account = "Wallet",       dateString = "${d}03", timeString = "08:30 am", note = "Bus pass"),
-            TransactionEntity(type = "EXPENSE",  amount = 200.0,  category = "Utilities",        account = "Bank Account", dateString = "${d}05", timeString = "10:00 am", note = "Internet bill"),
-            TransactionEntity(type = "EXPENSE",  amount = 80.0,   category = "Entertainment",    account = "Bank Account", dateString = "${d}08", timeString = "07:00 pm", note = "Movie and dinner"),
-            TransactionEntity(type = "TRANSFER", amount = 500.0,  category = "Savings",          account = "Bank Account", toAccount = "Savings Jar", dateString = "${d}10", timeString = "11:00 am", note = "Monthly savings"),
-            TransactionEntity(type = "EXPENSE",  amount = 60.0,   category = "Health & Fitness", account = "Bank Account", dateString = "${d}12", timeString = "06:00 am", note = "Gym membership"),
-            TransactionEntity(type = "EXPENSE",  amount = 35.0,   category = "Food & Dining",    account = "Wallet",       dateString = "${d}14", timeString = "12:30 pm", note = "Lunch out"),
-            TransactionEntity(type = "EXPENSE",  amount = 150.0,  category = "Shopping",         account = "Bank Account", dateString = "${d}16", timeString = "03:00 pm", note = "Clothing"),
-            TransactionEntity(type = "INCOME",   amount = 300.0,  category = "Freelance",        account = "Bank Account", dateString = "${d}18", timeString = "05:00 pm", note = "Side project payment")
-        )
-        defaultTx.forEach { repository.insertTransaction(it) }
+    /** Wipes all user data and re-seeds the minimal scaffolding. Used by Settings → Start Fresh. */
+    fun clearAllData() = viewModelScope.launch(Dispatchers.IO) {
+        repository.clearAll()
+        populateDefaultData()
     }
 
     // --- Habit Actions ---

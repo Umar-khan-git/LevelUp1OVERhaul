@@ -686,6 +686,7 @@ fun SettingsButton(viewModel: DashboardViewModel) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showSettings by remember { mutableStateOf(false) }
+    var showClearConfirm by remember { mutableStateOf(false) }
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -732,6 +733,32 @@ fun SettingsButton(viewModel: DashboardViewModel) {
         Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MutedText)
     }
 
+    if (showClearConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirm = false },
+            containerColor = Color(0xFF1A1A1A),
+            title = { Text("Start fresh?", color = Color.White, fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "This permanently deletes ALL your data — transactions, habits, goals, sleep, roadmaps, achievements and mottos. Consider exporting a backup first. This cannot be undone.",
+                    color = Color.Gray, fontSize = 13.sp, lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.clearAllData()
+                    context.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE).edit().clear().apply()
+                    showClearConfirm = false
+                    showSettings = false
+                    Toast.makeText(context, "Cleared — fresh start ✨", Toast.LENGTH_SHORT).show()
+                }) { Text("Delete everything", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirm = false }) { Text("Cancel", color = Color.White) }
+            }
+        )
+    }
+
     if (showSettings) {
         Dialog(onDismissRequest = { showSettings = false }) {
             Card(
@@ -759,6 +786,13 @@ fun SettingsButton(viewModel: DashboardViewModel) {
                         shape = RoundedCornerShape(12.dp)
                     ) { Text("⬆   Import / Restore", color = Color.White, fontWeight = FontWeight.Bold) }
                     Text("Restoring replaces your current data with the backup.", color = Color(0xFFFFAB40), fontSize = 10.sp)
+                    HorizontalDivider(color = BorderHighlight)
+                    Button(
+                        onClick = { showClearConfirm = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A1515)),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) { Text("🗑   Start fresh (clear all data)", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold) }
                     TextButton(onClick = { showSettings = false }, modifier = Modifier.align(Alignment.End)) {
                         Text("Close", color = MutedText)
                     }
