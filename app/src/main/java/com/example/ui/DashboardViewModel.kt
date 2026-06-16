@@ -13,7 +13,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class DashboardViewModel(private val repository: DashboardRepository) : ViewModel() {
+class DashboardViewModel(
+    private val repository: DashboardRepository,
+    private val prefs: android.content.SharedPreferences? = null
+) : ViewModel() {
 
     // --- State Streams ---
     val habits: StateFlow<List<HabitEntity>> = repository.allHabits
@@ -69,9 +72,24 @@ class DashboardViewModel(private val repository: DashboardRepository) : ViewMode
                     val updatedHabits = habitsList.map { habit ->
                         val lastUpdatedStr = if (habit.dateUpdated > 0) sdf.format(Date(habit.dateUpdated)) else ""
                         if (lastUpdatedStr != todayStr && lastUpdatedStr.isNotEmpty()) {
-                            // New day! Reset checks and check streak
+                            // New day — decide streak with a 1-day "freeze" / grace.
+                            val graceKey = "grace_${habit.id}"
                             val wasCompleted = habit.isCompleted
-                            val newStreak = if (wasCompleted) habit.streak else 0
+                            val newStreak: Int = if (wasCompleted) {
+                                prefs?.edit()?.remove(graceKey)?.apply() // back on track, clear grace
+                                habit.streak
+                            } else {
+                                val graceUsed = prefs?.getBoolean(graceKey, false) ?: false
+                                if (habit.streak > 0 && !graceUsed) {
+                                    // First missed day: freeze the streak instead of resetting
+                                    prefs?.edit()?.putBoolean(graceKey, true)?.apply()
+                                    habit.streak
+                                } else {
+                                    // Missed again (or no streak): reset
+                                    prefs?.edit()?.remove(graceKey)?.apply()
+                                    0
+                                }
+                            }
                             updatedAny = true
                             habit.copy(
                                 isCompleted = false,
@@ -332,6 +350,7 @@ class DashboardViewModel(private val repository: DashboardRepository) : ViewMode
     fun toggleHabit(habit: HabitEntity) = viewModelScope.launch {
         val newDone = !habit.isCompleted
         val newStreak = if (newDone) habit.streak + 1 else maxOf(0, habit.streak - 1)
+        if (newDone) prefs?.edit()?.remove("grace_${habit.id}")?.apply() // completed → no longer needs grace
         repository.updateHabit(habit.copy(isCompleted = newDone, streak = newStreak, dateUpdated = System.currentTimeMillis()))
     }
 

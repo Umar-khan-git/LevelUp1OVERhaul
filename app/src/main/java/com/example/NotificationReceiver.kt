@@ -9,7 +9,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.room.Room
+import com.example.data.AppDatabase
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class NotificationReceiver : BroadcastReceiver() {
 
@@ -20,11 +27,53 @@ class NotificationReceiver : BroadcastReceiver() {
             return
         }
 
-        // Show notification
-        showNotification(context)
+        // Build the message off the main thread (it reads the database), then notify.
+        val pending = goAsync()
+        Thread {
+            try {
+                val (title, body) = buildSmartMessage(context)
+                showNotification(context, title, body)
+            } catch (e: Exception) {
+                showNotification(context, "LevelUp ⚡", "Time to check in! Log your habits, sleep and spending 📊")
+            } finally {
+                pending.finish()
+            }
+        }.start()
     }
 
-    private fun showNotification(context: Context) {
+    /** Reads today's progress and crafts a personal, context-aware message. */
+    private fun buildSmartMessage(context: Context): Pair<String, String> {
+        val name = context.getSharedPreferences("levelup_prefs", Context.MODE_PRIVATE)
+            .getString("user_name", "") ?: ""
+        val who = if (name.isNotBlank()) name.trim() else "there"
+        return try {
+            val db = Room.databaseBuilder(context, AppDatabase::class.java, "levelup_db").build()
+            val dao = db.dashboardDao()
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+            val habits = runBlocking { dao.getAllHabits().first() }
+            val sleep = runBlocking { dao.getAllSleepLogs().first() }
+            db.close()
+
+            val total = habits.size
+            val done = habits.count { it.isCompleted }
+            val sleptToday = sleep.any { it.dateString == today }
+
+            val tasks = mutableListOf<String>()
+            if (total > 0 && done < total) tasks.add("${total - done} habit${if (total - done > 1) "s" else ""} to finish")
+            if (!sleptToday) tasks.add("log last night's sleep")
+
+            val body = if (tasks.isEmpty()) {
+                "You're on track today, $who! Keep the momentum going 🔥"
+            } else {
+                "Hey $who — you've still got ${tasks.joinToString(" and ")}. Tap to level up 💪"
+            }
+            "LevelUp ⚡" to body
+        } catch (e: Exception) {
+            "LevelUp ⚡" to "Time to check in, $who! Log your habits, sleep and spending 📊"
+        }
+    }
+
+    private fun showNotification(context: Context, title: String, body: String) {
         val channelId = "daily_tracker_reminder"
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -50,20 +99,11 @@ class NotificationReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
         )
 
-        // Random reminder messages to make it fun & engaging for Umar Khan
-        val messages = listOf(
-            "Time for your daily log! Keep up the daily grind, Umar! ⚔️",
-            "11:00 AM status check! Ready to update your habits and level up? 🎮",
-            "Don't lose your streak today! Record your tasks and sleep logged! 📊",
-            "Morning review: How is Umar's day going? Log your goals now! 🌟",
-            "Quick log reminder! Grab your vocabulary card review and track your habits! 🗺️"
-        )
-        val selectedMessage = messages.random()
-
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("Umar Tracker Reminder 🔔")
-            .setContentText(selectedMessage)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

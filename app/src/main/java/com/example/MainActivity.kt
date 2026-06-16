@@ -109,10 +109,11 @@ class MainActivity : ComponentActivity() {
         repository = DashboardRepository(database.dashboardDao())
 
         // ViewModel Factory
+        val rpgPrefs = applicationContext.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE)
         viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return DashboardViewModel(repository) as T
+                return DashboardViewModel(repository, rpgPrefs) as T
             }
         })[DashboardViewModel::class.java]
 
@@ -836,6 +837,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
     var showGuideToday by remember { mutableStateOf(!_guidePrefsToday.getBoolean("guide_today", false)) }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val intents by viewModel.intents.collectAsStateWithLifecycle()
+    val rpgPrefs = remember { context.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE) }
 
     var showAddHabit by rememberSaveable { mutableStateOf(false) }
     var showAddIntent by rememberSaveable { mutableStateOf(false) }
@@ -948,6 +950,13 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                                 }
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
+                                    if (!habit.isCompleted && rpgPrefs.getBoolean("grace_${habit.id}", false)) {
+                                        Text(
+                                            text = "🛡",
+                                            fontSize = 12.sp,
+                                            modifier = Modifier.padding(end = 3.dp)
+                                        )
+                                    }
                                     if (habit.streak > 0) {
                                         Text(
                                             text = "🔥 ${habit.streak}",
