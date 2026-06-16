@@ -594,27 +594,65 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
             context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
                 .getString("user_name", "Welcome") ?: "Welcome"
         }
+        val headerPhotoPath = remember {
+            context.getSharedPreferences("profile_prefs", android.content.Context.MODE_PRIVATE)
+                .getString("photo_path", null)
+        }
+        val headerBitmap = remember(headerPhotoPath) {
+            headerPhotoPath?.let { try { BitmapFactory.decodeFile(it) } catch (e: Exception) { null } }
+        }
 
-        Column {
-            Text(
-                text = userName.uppercase(),
-                style = TextStyle(
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 24.sp,
-                    letterSpacing = (-0.5).sp,
-                    brush = InstaGradient
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            // Profile photo / initial
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(Brush.linearGradient(listOf(InstaPurple.copy(alpha = 0.7f), Color(0xFF1A1A1A))))
+                    .border(
+                        BorderStroke(1.5.dp, Brush.sweepGradient(listOf(InstaPurple, BrandAccent, InstaOrange, InstaPurple))),
+                        CircleShape
+                    )
+            ) {
+                if (headerBitmap != null) {
+                    Image(
+                        bitmap = headerBitmap.asImageBitmap(),
+                        contentDescription = "Profile",
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        userName.trim().take(1).uppercase(),
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            Column {
+                Text(
+                    text = userName.uppercase(),
+                    style = TextStyle(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 22.sp,
+                        letterSpacing = (-0.5).sp,
+                        brush = InstaGradient
+                    )
                 )
-            )
-            Text(
-                text = "Self-Improvement Hub",
-                style = TextStyle(
-                    color = MutedText,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                Text(
+                    text = "Self-Improvement Hub",
+                    style = TextStyle(
+                        color = MutedText,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
                 )
-            )
+            }
         }
 
         // Right side: settings + streak pill
@@ -1503,7 +1541,14 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                                     .clickable { showAddPointsId = goal.id }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("+ Log Action", color = BrandAccent, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                                Text(
+                                    "+ Log Action",
+                                    color = BrandAccent,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
                             }
 
                             IconButton(
