@@ -6,6 +6,9 @@ import com.example.data.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -91,6 +94,105 @@ class DashboardViewModel(private val repository: DashboardRepository) : ViewMode
 
     fun setWeekKey(key: String) {
         _currentWeekKey.value = key
+    }
+
+    // ============================================================
+    // BACKUP / RESTORE  (full DB export & import as JSON)
+    // ============================================================
+    suspend fun buildBackupJson(): String = withContext(Dispatchers.IO) {
+        val root = JSONObject()
+        root.put("schema", 1)
+        root.put("exportedAt", System.currentTimeMillis())
+
+        root.put("habits", JSONArray().apply {
+            repository.allHabits.first().forEach { put(JSONObject()
+                .put("id", it.id).put("name", it.name).put("isCompleted", it.isCompleted)
+                .put("streak", it.streak).put("dateUpdated", it.dateUpdated)) }
+        })
+        root.put("intents", JSONArray().apply {
+            repository.allIntents.first().forEach { put(JSONObject()
+                .put("id", it.id).put("name", it.name).put("isCompleted", it.isCompleted)) }
+        })
+        root.put("goals", JSONArray().apply {
+            repository.allGoals.first().forEach { put(JSONObject()
+                .put("id", it.id).put("name", it.name).put("why", it.why)
+                .put("status", it.status).put("bonusPoints", it.bonusPoints.toDouble())) }
+        })
+        root.put("pointLogs", JSONArray().apply {
+            repository.allPointLogs.first().forEach { put(JSONObject()
+                .put("id", it.id).put("goalId", it.goalId).put("activity", it.activity)
+                .put("hours", it.hours.toDouble()).put("dateAdded", it.dateAdded)) }
+        })
+        root.put("learning", JSONArray().apply {
+            repository.allLearningItems.first().forEach { put(JSONObject()
+                .put("id", it.id).put("name", it.name).put("subtext", it.subtext)
+                .put("category", it.category).put("status", it.status)) }
+        })
+        root.put("words", JSONArray().apply {
+            repository.allWords.first().forEach { put(JSONObject()
+                .put("id", it.id).put("word", it.word).put("meaning", it.meaning).put("category", it.category)) }
+        })
+        root.put("sleep", JSONArray().apply {
+            repository.allSleepLogs.first().forEach { put(JSONObject()
+                .put("id", it.id).put("dateString", it.dateString).put("sleptAt", it.sleptAt)
+                .put("wokeUp", it.wokeUp).put("hoursSlept", it.hoursSlept.toDouble()).put("timestamp", it.timestamp)) }
+        })
+        root.put("transactions", JSONArray().apply {
+            repository.allTransactions.first().forEach { put(JSONObject()
+                .put("id", it.id).put("type", it.type).put("amount", it.amount).put("category", it.category)
+                .put("account", it.account).put("toAccount", it.toAccount ?: JSONObject.NULL)
+                .put("dateString", it.dateString).put("timeString", it.timeString)
+                .put("note", it.note).put("description", it.description ?: JSONObject.NULL).put("timestamp", it.timestamp)) }
+        })
+        root.put("accounts", JSONArray().apply {
+            repository.allMoneyAccounts.first().forEach { put(JSONObject()
+                .put("id", it.id).put("name", it.name).put("type", it.type)
+                .put("balance", it.balance).put("outstBalance", it.outstBalance)) }
+        })
+        root.put("categories", JSONArray().apply {
+            repository.allCategories.first().forEach { put(JSONObject()
+                .put("id", it.id).put("name", it.name).put("type", it.type)) }
+        })
+        // reflections — read directly via week flow is per-key, so gather via a query helper
+        root.put("reflections", JSONArray().apply {
+            repository.allReflections().forEach { put(JSONObject()
+                .put("weekKey", it.weekKey).put("reflection", it.reflection).put("intention", it.intention)) }
+        })
+        root.toString()
+    }
+
+    suspend fun restoreBackupJson(json: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val root = JSONObject(json)
+            repository.clearAll()
+
+            root.optJSONArray("habits")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertHabit(HabitEntity(o.getLong("id"), o.getString("name"), o.getBoolean("isCompleted"), o.getInt("streak"), o.getLong("dateUpdated"))) } }
+            root.optJSONArray("intents")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertIntent(IntentEntity(o.getLong("id"), o.getString("name"), o.getBoolean("isCompleted"))) } }
+            root.optJSONArray("goals")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertGoal(GoalEntity(o.getLong("id"), o.getString("name"), o.getString("why"), o.getString("status"), o.getDouble("bonusPoints").toFloat())) } }
+            root.optJSONArray("pointLogs")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertPointLog(PointLogEntity(o.getLong("id"), o.getLong("goalId"), o.getString("activity"), o.getDouble("hours").toFloat(), o.getLong("dateAdded"))) } }
+            root.optJSONArray("learning")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertLearning(LearningEntity(o.getLong("id"), o.getString("name"), o.getString("subtext"), o.getString("category"), o.getString("status"))) } }
+            root.optJSONArray("words")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertWord(WordEntity(o.getLong("id"), o.getString("word"), o.getString("meaning"), o.getString("category"))) } }
+            root.optJSONArray("sleep")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertSleepLog(SleepLogEntity(o.getLong("id"), o.getString("dateString"), o.getString("sleptAt"), o.getString("wokeUp"), o.getDouble("hoursSlept").toFloat(), o.getLong("timestamp"))) } }
+            root.optJSONArray("transactions")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertTransaction(TransactionEntity(o.getLong("id"), o.getString("type"), o.getDouble("amount"), o.getString("category"), o.getString("account"), o.optString("toAccount").takeIf { !o.isNull("toAccount") }, o.getString("dateString"), o.getString("timeString"), o.optString("note"), o.optString("description").takeIf { !o.isNull("description") }, o.getLong("timestamp"))) } }
+            root.optJSONArray("accounts")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertMoneyAccount(MoneyAccountEntity(o.getLong("id"), o.getString("name"), o.getString("type"), o.getDouble("balance"), o.getDouble("outstBalance"))) } }
+            root.optJSONArray("categories")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertCategory(CategoryEntity(o.getLong("id"), o.getString("name"), o.getString("type"))) } }
+            root.optJSONArray("reflections")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
+                repository.insertReflection(ReflectionEntity(o.getString("weekKey"), o.getString("reflection"), o.getString("intention"))) } }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 
     // --- Helper for Default Population ---

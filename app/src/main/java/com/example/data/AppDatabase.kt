@@ -130,6 +130,9 @@ interface DashboardDao {
     @Query("SELECT * FROM weekly_reflections WHERE weekKey = :weekKey")
     fun getReflectionByWeekFlow(weekKey: String): Flow<ReflectionEntity?>
 
+    @Query("SELECT * FROM weekly_reflections")
+    suspend fun getAllReflectionsDirect(): List<ReflectionEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReflection(reflection: ReflectionEntity)
 
@@ -177,6 +180,19 @@ interface DashboardDao {
 
     @Query("DELETE FROM money_categories WHERE id = :id")
     suspend fun deleteCategoryById(id: Long)
+
+    // ===== Clear-all (used by backup restore — no schema change) =====
+    @Query("DELETE FROM habits") suspend fun clearHabits()
+    @Query("DELETE FROM daily_intents") suspend fun clearIntents()
+    @Query("DELETE FROM goals") suspend fun clearGoals()
+    @Query("DELETE FROM point_logs") suspend fun clearPointLogs()
+    @Query("DELETE FROM learning_items") suspend fun clearLearning()
+    @Query("DELETE FROM vocabulary") suspend fun clearWords()
+    @Query("DELETE FROM sleep_logs") suspend fun clearSleepLogs()
+    @Query("DELETE FROM weekly_reflections") suspend fun clearReflections()
+    @Query("DELETE FROM money_transactions") suspend fun clearTransactions()
+    @Query("DELETE FROM money_accounts") suspend fun clearAccounts()
+    @Query("DELETE FROM money_categories") suspend fun clearCategories()
 }
 
 @Database(

@@ -57,6 +57,7 @@ class DashboardRepository(private val dao: DashboardDao) {
     // Reflections
     fun getReflectionByWeek(weekKey: String): Flow<ReflectionEntity?> = dao.getReflectionByWeekFlow(weekKey)
     suspend fun insertReflection(reflection: ReflectionEntity) = dao.insertReflection(reflection)
+    suspend fun allReflections(): List<ReflectionEntity> = dao.getAllReflectionsDirect()
 
     // Money Manager Transactions
     val allTransactions: Flow<List<TransactionEntity>> = dao.getAllTransactions()
@@ -77,4 +78,11 @@ class DashboardRepository(private val dao: DashboardDao) {
     val allCategories: Flow<List<CategoryEntity>> = dao.getAllCategories()
     suspend fun insertCategory(category: CategoryEntity) = dao.insertCategory(category)
     suspend fun deleteCategoryById(id: Long) = dao.deleteCategoryById(id)
+
+    // Clear-all (backup restore)
+    suspend fun clearAll() {
+        dao.clearHabits(); dao.clearIntents(); dao.clearGoals(); dao.clearPointLogs()
+        dao.clearLearning(); dao.clearWords(); dao.clearSleepLogs(); dao.clearReflections()
+        dao.clearTransactions(); dao.clearAccounts(); dao.clearCategories()
+    }
 }

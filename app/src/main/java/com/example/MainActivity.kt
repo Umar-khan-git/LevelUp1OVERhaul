@@ -83,6 +83,11 @@ import java.util.Calendar
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -609,24 +614,145 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
             )
         }
 
-        // App open streak pill
-        Row(
-            modifier = Modifier
-                .background(LayerCard, shape = RoundedCornerShape(100))
-                .border(1.dp, BorderHighlight, shape = RoundedCornerShape(100))
-                .padding(horizontal = 14.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = "🔥", fontSize = 14.sp)
-            Text(
-                text = "$appOpenStreak DAY${if (appOpenStreak != 1) "S" else ""}",
-                color = Color.White,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Black
-            )
+        // Right side: settings + streak pill
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SettingsButton(viewModel = viewModel)
+            Row(
+                modifier = Modifier
+                    .background(LayerCard, shape = RoundedCornerShape(100))
+                    .border(1.dp, BorderHighlight, shape = RoundedCornerShape(100))
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(text = "🔥", fontSize = 14.sp)
+                Text(
+                    text = "$appOpenStreak DAY${if (appOpenStreak != 1) "S" else ""}",
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
         }
     }
+}
+
+// ============================================
+// SETTINGS (backup / restore)
+// ============================================
+@Composable
+fun SettingsButton(viewModel: DashboardViewModel) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var showSettings by remember { mutableStateOf(false) }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                try {
+                    val dbJson = viewModel.buildBackupJson()
+                    val root = JSONObject()
+                    root.put("db", JSONObject(dbJson))
+                    root.put("prefs", collectPrefsJson(context))
+                    withContext(Dispatchers.IO) {
+                        context.contentResolver.openOutputStream(uri)?.use { it.write(root.toString().toByteArray()) }
+                    }
+                    Toast.makeText(context, "✅ Backup saved", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Backup failed: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                try {
+                    val text = withContext(Dispatchers.IO) {
+                        context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                    } ?: ""
+                    val root = JSONObject(text)
+                    val ok = viewModel.restoreBackupJson(root.getJSONObject("db").toString())
+                    if (root.has("prefs")) restorePrefsJson(context, root.getJSONObject("prefs"))
+                    Toast.makeText(context, if (ok) "✅ Data restored" else "Restore failed", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Restore failed: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    IconButton(onClick = { showSettings = true }) {
+        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MutedText)
+    }
+
+    if (showSettings) {
+        Dialog(onDismissRequest = { showSettings = false }) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                shape = RoundedCornerShape(20.dp),
+                border = BorderStroke(1.dp, BorderHighlight),
+                modifier = Modifier.fillMaxWidth().padding(8.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("Settings", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text(
+                        "Back up everything — habits, money, goals, sleep, roadmaps — to a file you can save to Drive or share. Restore it anytime, on a new phone or after reinstalling.",
+                        color = MutedText, fontSize = 12.sp, lineHeight = 17.sp
+                    )
+                    Button(
+                        onClick = { showSettings = false; exportLauncher.launch("levelup-backup.json") },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) { Text("⬇   Export / Back up", color = Color.White, fontWeight = FontWeight.Bold) }
+                    Button(
+                        onClick = { showSettings = false; importLauncher.launch(arrayOf("application/json")) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A2A2A)),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) { Text("⬆   Import / Restore", color = Color.White, fontWeight = FontWeight.Bold) }
+                    Text("Restoring replaces your current data with the backup.", color = Color(0xFFFFAB40), fontSize = 10.sp)
+                    TextButton(onClick = { showSettings = false }, modifier = Modifier.align(Alignment.End)) {
+                        Text("Close", color = MutedText)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun collectPrefsJson(context: android.content.Context): JSONObject {
+    val lp = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+    val rpg = context.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE)
+    return JSONObject().apply {
+        put("user_name", lp.getString("user_name", "") ?: "")
+        put("onboarding_done", lp.getBoolean("onboarding_done", false))
+        put("roadmaps", rpg.getString("roadmaps", "") ?: "")
+        put("bonus_xp", rpg.getInt("bonus_xp", 0))
+        put("user_title", rpg.getString("user_title", "") ?: "")
+        put("user_tagline", rpg.getString("user_tagline", "") ?: "")
+    }
+}
+
+private fun restorePrefsJson(context: android.content.Context, o: JSONObject) {
+    val lp = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+    val rpg = context.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE)
+    lp.edit()
+        .putString("user_name", o.optString("user_name", ""))
+        .putBoolean("onboarding_done", o.optBoolean("onboarding_done", true))
+        .apply()
+    rpg.edit()
+        .putString("roadmaps", o.optString("roadmaps", ""))
+        .putInt("bonus_xp", o.optInt("bonus_xp", 0))
+        .putString("user_title", o.optString("user_title", ""))
+        .putString("user_tagline", o.optString("user_tagline", ""))
+        .apply()
 }
 
 @Composable
