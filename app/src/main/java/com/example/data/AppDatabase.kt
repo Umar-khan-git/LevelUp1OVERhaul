@@ -18,6 +18,30 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
+/** v6 -> v7: adds the money_recurring table (recurring transactions). Non-destructive. */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Column types/nullability must match Room's generated schema exactly (no SQL defaults,
+        // since the entity uses Kotlin default values rather than @ColumnInfo(defaultValue=...)).
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS money_recurring (" +
+                "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                "type TEXT NOT NULL, " +
+                "amount REAL NOT NULL, " +
+                "category TEXT NOT NULL, " +
+                "account TEXT NOT NULL, " +
+                "toAccount TEXT, " +
+                "note TEXT NOT NULL, " +
+                "frequency TEXT NOT NULL, " +
+                "intervalCount INTEGER NOT NULL, " +
+                "startDate TEXT NOT NULL, " +
+                "nextDate TEXT NOT NULL, " +
+                "endDate TEXT, " +
+                "active INTEGER NOT NULL)"
+        )
+    }
+}
+
 @Dao
 interface DashboardDao {
     // Habits
@@ -212,6 +236,25 @@ interface DashboardDao {
     @Query("DELETE FROM money_budgets WHERE id = :id")
     suspend fun deleteBudgetById(id: Long)
 
+    // Money Manager Recurring rules
+    @Query("SELECT * FROM money_recurring ORDER BY id ASC")
+    fun getAllRecurring(): Flow<List<RecurringEntity>>
+
+    @Query("SELECT * FROM money_recurring")
+    suspend fun getAllRecurringDirect(): List<RecurringEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRecurring(rule: RecurringEntity): Long
+
+    @Update
+    suspend fun updateRecurring(rule: RecurringEntity)
+
+    @Delete
+    suspend fun deleteRecurring(rule: RecurringEntity)
+
+    @Query("DELETE FROM money_recurring WHERE id = :id")
+    suspend fun deleteRecurringById(id: Long)
+
     // ===== Clear-all (used by backup restore — no schema change) =====
     @Query("DELETE FROM habits") suspend fun clearHabits()
     @Query("DELETE FROM daily_intents") suspend fun clearIntents()
@@ -225,6 +268,7 @@ interface DashboardDao {
     @Query("DELETE FROM money_accounts") suspend fun clearAccounts()
     @Query("DELETE FROM money_categories") suspend fun clearCategories()
     @Query("DELETE FROM money_budgets") suspend fun clearBudgets()
+    @Query("DELETE FROM money_recurring") suspend fun clearRecurring()
 }
 
 @Database(
@@ -240,9 +284,10 @@ interface DashboardDao {
         TransactionEntity::class,
         MoneyAccountEntity::class,
         CategoryEntity::class,
-        BudgetEntity::class
+        BudgetEntity::class,
+        RecurringEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

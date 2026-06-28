@@ -55,6 +55,10 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
     val accounts by viewModel.moneyAccounts.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val budgets by viewModel.budgets.collectAsStateWithLifecycle()
+    val recurring by viewModel.recurring.collectAsStateWithLifecycle()
+
+    // Auto-post any due recurring transactions when the finance tab opens.
+    LaunchedEffect(Unit) { viewModel.processRecurring() }
 
     var showAddTxSheet by rememberSaveable { mutableStateOf(false) }
     val currentMonthKey = remember {
@@ -96,6 +100,12 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
                     categories = categories,
                     selectedMonthKey = selectedMonthKey,
                     onMonthKeyChange = { selectedMonthKey = it },
+                    viewModel = viewModel
+                )
+                "repeat" -> RecurringSubScreen(
+                    recurring = recurring,
+                    accounts = accounts,
+                    categories = categories,
                     viewModel = viewModel
                 )
                 "accounts" -> AccountsSubScreen(
@@ -252,6 +262,33 @@ fun FinanceSubNavBar(
                         drawCircle(color, radius = 2.dp.toPx(), center = androidx.compose.ui.geometry.Offset(w * 0.25f, h * 0.25f))
                         drawCircle(color, radius = 2.dp.toPx(), center = androidx.compose.ui.geometry.Offset(w * 0.75f, h * 0.5f))
                         drawCircle(color, radius = 2.dp.toPx(), center = androidx.compose.ui.geometry.Offset(w * 0.25f, h * 0.75f))
+                    }
+                }
+            )
+
+            FinanceSubTabItem(
+                id = "repeat",
+                label = "Repeat",
+                isSelected = selectedTab == "repeat",
+                onClick = { onTabSelected("repeat") },
+                iconPainter = { color ->
+                    Canvas(modifier = Modifier.size(18.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        // circular "refresh" arc with an arrowhead
+                        drawArc(
+                            color = color,
+                            startAngle = 30f,
+                            sweepAngle = 290f,
+                            useCenter = false,
+                            topLeft = androidx.compose.ui.geometry.Offset(w * 0.1f, h * 0.1f),
+                            size = androidx.compose.ui.geometry.Size(w * 0.8f, h * 0.8f),
+                            style = Stroke(width = 1.8.dp.toPx())
+                        )
+                        val ax = w * 0.85f
+                        val ay = h * 0.32f
+                        drawLine(color, androidx.compose.ui.geometry.Offset(ax, ay), androidx.compose.ui.geometry.Offset(ax - w * 0.18f, ay - h * 0.04f), strokeWidth = 1.8.dp.toPx())
+                        drawLine(color, androidx.compose.ui.geometry.Offset(ax, ay), androidx.compose.ui.geometry.Offset(ax + w * 0.02f, ay + h * 0.18f), strokeWidth = 1.8.dp.toPx())
                     }
                 }
             )

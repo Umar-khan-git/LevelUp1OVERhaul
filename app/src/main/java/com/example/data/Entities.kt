@@ -114,3 +114,20 @@ data class BudgetEntity(
     }
 }
 
+@Entity(tableName = "money_recurring")
+data class RecurringEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val type: String,               // "INCOME", "EXPENSE", "TRANSFER"
+    val amount: Double,
+    val category: String,
+    val account: String,            // source account
+    val toAccount: String? = null,  // destination (transfers)
+    val note: String = "",
+    val frequency: String,          // "DAILY", "WEEKLY", "MONTHLY", "YEARLY"
+    val intervalCount: Int = 1,     // every N units of frequency
+    val startDate: String,          // "yyyy-MM-dd"
+    val nextDate: String,           // "yyyy-MM-dd" — next occurrence still to post
+    val endDate: String? = null,    // optional last date (inclusive); null = forever
+    val active: Boolean = true
+)
+

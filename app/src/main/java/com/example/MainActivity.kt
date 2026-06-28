@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
             applicationContext,
             AppDatabase::class.java,
             "levelup_db"
-        ).addMigrations(MIGRATION_5_6).fallbackToDestructiveMigration().build()
+        ).addMigrations(MIGRATION_5_6, MIGRATION_6_7).fallbackToDestructiveMigration().build()
 
         repository = DashboardRepository(database.dashboardDao())
 

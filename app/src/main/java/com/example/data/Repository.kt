@@ -86,10 +86,18 @@ class DashboardRepository(private val dao: DashboardDao) {
     suspend fun deleteBudget(b: BudgetEntity) = dao.deleteBudget(b)
     suspend fun deleteBudgetById(id: Long) = dao.deleteBudgetById(id)
 
+    // Money Manager Recurring rules
+    val allRecurring: Flow<List<RecurringEntity>> = dao.getAllRecurring()
+    suspend fun getAllRecurringDirect(): List<RecurringEntity> = dao.getAllRecurringDirect()
+    suspend fun insertRecurring(rule: RecurringEntity) = dao.insertRecurring(rule)
+    suspend fun updateRecurring(rule: RecurringEntity) = dao.updateRecurring(rule)
+    suspend fun deleteRecurring(rule: RecurringEntity) = dao.deleteRecurring(rule)
+    suspend fun deleteRecurringById(id: Long) = dao.deleteRecurringById(id)
+
     // Clear-all (backup restore)
     suspend fun clearAll() {
         dao.clearHabits(); dao.clearIntents(); dao.clearGoals(); dao.clearPointLogs()
         dao.clearLearning(); dao.clearWords(); dao.clearSleepLogs(); dao.clearReflections()
-        dao.clearTransactions(); dao.clearAccounts(); dao.clearCategories(); dao.clearBudgets()
+        dao.clearTransactions(); dao.clearAccounts(); dao.clearCategories(); dao.clearBudgets(); dao.clearRecurring()
     }
 }

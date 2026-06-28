@@ -52,6 +52,9 @@ class DashboardViewModel(
     val budgets: StateFlow<List<BudgetEntity>> = repository.allBudgets
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val recurring: StateFlow<List<RecurringEntity>> = repository.allRecurring
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     // Reflection State
     private val _currentWeekKey = MutableStateFlow("2026-W22") // Default to active week key based on system time 2026-05-31
     val currentWeekKey: StateFlow<String> = _currentWeekKey.asStateFlow()
@@ -466,6 +469,65 @@ class DashboardViewModel(
 
     fun deleteBudget(budget: BudgetEntity) = viewModelScope.launch {
         repository.deleteBudget(budget)
+    }
+
+    // --- Recurring transactions ---
+    fun addRecurring(rule: RecurringEntity) = viewModelScope.launch {
+        repository.insertRecurring(rule)
+        processRecurring() // post immediately if the first occurrence is already due
+    }
+
+    fun updateRecurring(rule: RecurringEntity) = viewModelScope.launch {
+        repository.updateRecurring(rule)
+    }
+
+    fun deleteRecurring(rule: RecurringEntity) = viewModelScope.launch {
+        repository.deleteRecurring(rule)
+    }
+
+    /** Posts every due occurrence (catching up missed dates) and advances each rule's nextDate. */
+    fun processRecurring() = viewModelScope.launch {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val today = sdf.format(Date())
+        repository.getAllRecurringDirect().forEach { rule ->
+            if (!rule.active) return@forEach
+            var next = rule.nextDate
+            var guard = 0
+            var posted = false
+            while (next <= today && (rule.endDate == null || next <= rule.endDate) && guard < 2000) {
+                repository.insertTransaction(
+                    TransactionEntity(
+                        type = rule.type,
+                        amount = rule.amount,
+                        category = rule.category,
+                        account = rule.account,
+                        toAccount = rule.toAccount,
+                        dateString = next,
+                        timeString = "",
+                        note = rule.note
+                    )
+                )
+                updateBalancesAfterTx(rule.type, rule.amount, rule.account, rule.toAccount)
+                next = advanceDate(next, rule.frequency, rule.intervalCount, sdf)
+                guard++
+                posted = true
+            }
+            if (posted) repository.updateRecurring(rule.copy(nextDate = next))
+        }
+    }
+
+    private fun advanceDate(date: String, frequency: String, intervalCount: Int, sdf: SimpleDateFormat): String {
+        val step = if (intervalCount < 1) 1 else intervalCount
+        val cal = java.util.Calendar.getInstance()
+        cal.time = sdf.parse(date) ?: return date
+        when (frequency) {
+            "DAILY" -> cal.add(java.util.Calendar.DAY_OF_MONTH, step)
+            "WEEKLY" -> cal.add(java.util.Calendar.WEEK_OF_YEAR, step)
+            "MONTHLY" -> cal.add(java.util.Calendar.MONTH, step)
+            "YEARLY" -> cal.add(java.util.Calendar.YEAR, step)
+            else -> cal.add(java.util.Calendar.MONTH, step)
+        }
+        return sdf.format(cal.time)
     }
 
     private suspend fun updateBalancesAfterTx(type: String, amount: Double, accountName: String, toAccountName: String?) {
