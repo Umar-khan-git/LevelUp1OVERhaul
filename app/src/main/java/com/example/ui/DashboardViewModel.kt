@@ -49,6 +49,9 @@ class DashboardViewModel(
     val categories: StateFlow<List<CategoryEntity>> = repository.allCategories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val budgets: StateFlow<List<BudgetEntity>> = repository.allBudgets
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     // Reflection State
     private val _currentWeekKey = MutableStateFlow("2026-W22") // Default to active week key based on system time 2026-05-31
     val currentWeekKey: StateFlow<String> = _currentWeekKey.asStateFlow()
@@ -446,6 +449,23 @@ class DashboardViewModel(
 
     fun deleteCategory(id: Long) = viewModelScope.launch {
         repository.deleteCategoryById(id)
+    }
+
+    // --- Budgets ---
+    /** Upsert a budget for [category] (use BudgetEntity.TOTAL for the overall budget).
+     *  [yearMonth] = "yyyy-MM" for a month-specific budget, or null for the repeating default. */
+    fun setBudget(category: String, amount: Double, yearMonth: String?) = viewModelScope.launch {
+        val existing = repository.allBudgets.first()
+            .find { it.category == category && it.yearMonth == yearMonth }
+        if (existing != null) {
+            repository.updateBudget(existing.copy(amount = amount))
+        } else {
+            repository.insertBudget(BudgetEntity(category = category, amount = amount, yearMonth = yearMonth))
+        }
+    }
+
+    fun deleteBudget(budget: BudgetEntity) = viewModelScope.launch {
+        repository.deleteBudget(budget)
     }
 
     private suspend fun updateBalancesAfterTx(type: String, amount: Double, accountName: String, toAccountName: String?) {

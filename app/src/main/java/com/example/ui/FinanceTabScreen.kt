@@ -54,6 +54,7 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
     val accounts by viewModel.moneyAccounts.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val budgets by viewModel.budgets.collectAsStateWithLifecycle()
 
     var showAddTxSheet by rememberSaveable { mutableStateOf(false) }
     val currentMonthKey = remember {
@@ -88,6 +89,14 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
                     transactions = transactions,
                     selectedMonthKey = selectedMonthKey,
                     onMonthKeyChange = { selectedMonthKey = it }
+                )
+                "budget" -> BudgetSubScreen(
+                    transactions = transactions,
+                    budgets = budgets,
+                    categories = categories,
+                    selectedMonthKey = selectedMonthKey,
+                    onMonthKeyChange = { selectedMonthKey = it },
+                    viewModel = viewModel
                 )
                 "accounts" -> AccountsSubScreen(
                     accounts = accounts,
@@ -177,6 +186,30 @@ fun FinanceSubNavBar(
                             startAngle = -45f,
                             sweepAngle = 270f,
                             useCenter = true
+                        )
+                    }
+                }
+            )
+
+            FinanceSubTabItem(
+                id = "budget",
+                label = "Budget",
+                isSelected = selectedTab == "budget",
+                onClick = { onTabSelected("budget") },
+                iconPainter = { color ->
+                    Canvas(modifier = Modifier.size(18.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        // gauge: outline circle + filled progress arc
+                        drawCircle(color, radius = w * 0.45f, center = androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.5f), style = Stroke(width = 1.5.dp.toPx()))
+                        drawArc(
+                            color = color,
+                            startAngle = -90f,
+                            sweepAngle = 200f,
+                            useCenter = false,
+                            topLeft = androidx.compose.ui.geometry.Offset(w * 0.05f, h * 0.05f),
+                            size = androidx.compose.ui.geometry.Size(w * 0.9f, h * 0.9f),
+                            style = Stroke(width = 3.dp.toPx())
                         )
                     }
                 }

@@ -1,7 +1,22 @@
 package com.example.data
 
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
+
+/** v5 -> v6: adds the money_budgets table (budgets feature). Non-destructive. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS money_budgets (" +
+                "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                "category TEXT NOT NULL, " +
+                "amount REAL NOT NULL, " +
+                "yearMonth TEXT)"
+        )
+    }
+}
 
 @Dao
 interface DashboardDao {
@@ -181,6 +196,22 @@ interface DashboardDao {
     @Query("DELETE FROM money_categories WHERE id = :id")
     suspend fun deleteCategoryById(id: Long)
 
+    // Money Manager Budgets
+    @Query("SELECT * FROM money_budgets ORDER BY id ASC")
+    fun getAllBudgets(): Flow<List<BudgetEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBudget(budget: BudgetEntity): Long
+
+    @Update
+    suspend fun updateBudget(budget: BudgetEntity)
+
+    @Delete
+    suspend fun deleteBudget(budget: BudgetEntity)
+
+    @Query("DELETE FROM money_budgets WHERE id = :id")
+    suspend fun deleteBudgetById(id: Long)
+
     // ===== Clear-all (used by backup restore — no schema change) =====
     @Query("DELETE FROM habits") suspend fun clearHabits()
     @Query("DELETE FROM daily_intents") suspend fun clearIntents()
@@ -193,6 +224,7 @@ interface DashboardDao {
     @Query("DELETE FROM money_transactions") suspend fun clearTransactions()
     @Query("DELETE FROM money_accounts") suspend fun clearAccounts()
     @Query("DELETE FROM money_categories") suspend fun clearCategories()
+    @Query("DELETE FROM money_budgets") suspend fun clearBudgets()
 }
 
 @Database(
@@ -207,9 +239,10 @@ interface DashboardDao {
         ReflectionEntity::class,
         TransactionEntity::class,
         MoneyAccountEntity::class,
-        CategoryEntity::class
+        CategoryEntity::class,
+        BudgetEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -102,3 +102,15 @@ data class CategoryEntity(
     val type: String // "EXPENSE" or "INCOME"
 )
 
+@Entity(tableName = "money_budgets")
+data class BudgetEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val category: String,          // category name; BudgetEntity.TOTAL = overall monthly budget
+    val amount: Double,
+    val yearMonth: String? = null  // "2026-06" = that month only; null = repeats every month (default)
+) {
+    companion object {
+        const val TOTAL = "__TOTAL__" // sentinel for the overall monthly budget
+    }
+}
+

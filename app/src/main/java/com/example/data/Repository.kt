@@ -79,10 +79,17 @@ class DashboardRepository(private val dao: DashboardDao) {
     suspend fun insertCategory(category: CategoryEntity) = dao.insertCategory(category)
     suspend fun deleteCategoryById(id: Long) = dao.deleteCategoryById(id)
 
+    // Money Manager Budgets
+    val allBudgets: Flow<List<BudgetEntity>> = dao.getAllBudgets()
+    suspend fun insertBudget(b: BudgetEntity) = dao.insertBudget(b)
+    suspend fun updateBudget(b: BudgetEntity) = dao.updateBudget(b)
+    suspend fun deleteBudget(b: BudgetEntity) = dao.deleteBudget(b)
+    suspend fun deleteBudgetById(id: Long) = dao.deleteBudgetById(id)
+
     // Clear-all (backup restore)
     suspend fun clearAll() {
         dao.clearHabits(); dao.clearIntents(); dao.clearGoals(); dao.clearPointLogs()
         dao.clearLearning(); dao.clearWords(); dao.clearSleepLogs(); dao.clearReflections()
-        dao.clearTransactions(); dao.clearAccounts(); dao.clearCategories()
+        dao.clearTransactions(); dao.clearAccounts(); dao.clearCategories(); dao.clearBudgets()
     }
 }

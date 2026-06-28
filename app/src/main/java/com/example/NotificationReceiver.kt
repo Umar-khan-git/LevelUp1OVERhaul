@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import com.example.data.AppDatabase
+import com.example.data.MIGRATION_5_6
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
@@ -47,7 +48,8 @@ class NotificationReceiver : BroadcastReceiver() {
             .getString("user_name", "") ?: ""
         val who = if (name.isNotBlank()) name.trim() else "there"
         return try {
-            val db = Room.databaseBuilder(context, AppDatabase::class.java, "levelup_db").build()
+            val db = Room.databaseBuilder(context, AppDatabase::class.java, "levelup_db")
+                .addMigrations(MIGRATION_5_6).fallbackToDestructiveMigration().build()
             val dao = db.dashboardDao()
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
             val habits = runBlocking { dao.getAllHabits().first() }
