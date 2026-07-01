@@ -18,6 +18,13 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
+/** v7 -> v8: adds a nullable tags column to money_transactions. Non-destructive. */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE money_transactions ADD COLUMN tags TEXT")
+    }
+}
+
 /** v6 -> v7: adds the money_recurring table (recurring transactions). Non-destructive. */
 val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -287,7 +294,7 @@ interface DashboardDao {
         BudgetEntity::class,
         RecurringEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

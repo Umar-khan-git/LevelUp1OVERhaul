@@ -166,7 +166,8 @@ class DashboardViewModel(
                 .put("id", it.id).put("type", it.type).put("amount", it.amount).put("category", it.category)
                 .put("account", it.account).put("toAccount", it.toAccount ?: JSONObject.NULL)
                 .put("dateString", it.dateString).put("timeString", it.timeString)
-                .put("note", it.note).put("description", it.description ?: JSONObject.NULL).put("timestamp", it.timestamp)) }
+                .put("note", it.note).put("description", it.description ?: JSONObject.NULL).put("timestamp", it.timestamp)
+                .put("tags", it.tags ?: JSONObject.NULL)) }
         })
         root.put("accounts", JSONArray().apply {
             repository.allMoneyAccounts.first().forEach { put(JSONObject()
@@ -205,7 +206,7 @@ class DashboardViewModel(
             root.optJSONArray("sleep")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
                 repository.insertSleepLog(SleepLogEntity(o.getLong("id"), o.getString("dateString"), o.getString("sleptAt"), o.getString("wokeUp"), o.getDouble("hoursSlept").toFloat(), o.getLong("timestamp"))) } }
             root.optJSONArray("transactions")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
-                repository.insertTransaction(TransactionEntity(o.getLong("id"), o.getString("type"), o.getDouble("amount"), o.getString("category"), o.getString("account"), o.optString("toAccount").takeIf { !o.isNull("toAccount") }, o.getString("dateString"), o.getString("timeString"), o.optString("note"), o.optString("description").takeIf { !o.isNull("description") }, o.getLong("timestamp"))) } }
+                repository.insertTransaction(TransactionEntity(o.getLong("id"), o.getString("type"), o.getDouble("amount"), o.getString("category"), o.getString("account"), o.optString("toAccount").takeIf { !o.isNull("toAccount") }, o.getString("dateString"), o.getString("timeString"), o.optString("note"), o.optString("description").takeIf { !o.isNull("description") }, o.getLong("timestamp"), o.optString("tags").takeIf { !o.isNull("tags") && o.optString("tags").isNotEmpty() })) } }
             root.optJSONArray("accounts")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
                 repository.insertMoneyAccount(MoneyAccountEntity(o.getLong("id"), o.getString("name"), o.getString("type"), o.getDouble("balance"), o.getDouble("outstBalance"))) } }
             root.optJSONArray("categories")?.let { a -> for (i in 0 until a.length()) { val o = a.getJSONObject(i)
@@ -399,7 +400,8 @@ class DashboardViewModel(
         toAccount: String? = null,
         dateString: String,
         timeString: String,
-        note: String = ""
+        note: String = "",
+        tags: String? = null
     ) = viewModelScope.launch {
         repository.insertTransaction(
             TransactionEntity(
@@ -410,7 +412,8 @@ class DashboardViewModel(
                 toAccount = toAccount,
                 dateString = dateString,
                 timeString = timeString,
-                note = note
+                note = note,
+                tags = tags
             )
         )
         // Adjust the account balance

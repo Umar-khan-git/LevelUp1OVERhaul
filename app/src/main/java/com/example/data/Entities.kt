@@ -83,7 +83,8 @@ data class TransactionEntity(
     val timeString: String, // "9:23 pm"
     val note: String = "",
     val description: String? = null,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val tags: String? = null // comma-separated tags, e.g. "work,reimbursable"
 )
 
 @Entity(tableName = "money_accounts")

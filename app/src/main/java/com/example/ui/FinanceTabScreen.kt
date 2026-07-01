@@ -61,6 +61,7 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
     LaunchedEffect(Unit) { viewModel.processRecurring() }
 
     var showAddTxSheet by rememberSaveable { mutableStateOf(false) }
+    var showSearch by rememberSaveable { mutableStateOf(false) }
     val currentMonthKey = remember {
         SimpleDateFormat("yyyy-MM", Locale.US).format(Date())
     }
@@ -87,7 +88,8 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
                     onAddTxClick = { showAddTxSheet = true },
                     viewModel = viewModel,
                     selectedMonthKey = selectedMonthKey,
-                    onMonthKeyChange = { selectedMonthKey = it }
+                    onMonthKeyChange = { selectedMonthKey = it },
+                    onSearchClick = { showSearch = true }
                 )
                 "stats" -> StatsSubScreen(
                     transactions = transactions,
@@ -127,7 +129,7 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
                     categories = categories,
                     viewModel = viewModel,
                     onDismiss = { showAddTxSheet = false },
-                    onSave = { type, amount, category, account, toAccount, note, dateStr ->
+                    onSave = { type, amount, category, account, toAccount, note, dateStr, tags ->
                         val timeStr = SimpleDateFormat("h:mm a", Locale.US).format(Date())
                         viewModel.addTransaction(
                             type = type,
@@ -137,13 +139,24 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
                             toAccount = toAccount,
                             dateString = dateStr,
                             timeString = timeStr,
-                            note = note
+                            note = note,
+                            tags = tags
                         )
                         if (dateStr.length >= 7) {
                             selectedMonthKey = dateStr.substring(0, 7)
                         }
                         showAddTxSheet = false
                     }
+                )
+            }
+
+            if (showSearch) {
+                FinanceSearchScreen(
+                    transactions = transactions,
+                    accounts = accounts,
+                    categories = categories,
+                    onDismiss = { showSearch = false },
+                    viewModel = viewModel
                 )
             }
         }
@@ -334,7 +347,8 @@ fun TransactionsSubScreen(
     onAddTxClick: () -> Unit,
     viewModel: DashboardViewModel,
     selectedMonthKey: String,
-    onMonthKeyChange: (String) -> Unit
+    onMonthKeyChange: (String) -> Unit,
+    onSearchClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val _guidePrefsMoney = context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
@@ -413,7 +427,18 @@ fun TransactionsSubScreen(
                     Text("▶", color = Color.White, fontSize = 16.sp)
                 }
             }
-            Text("Monthly Filter", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .clickable { onSearchClick() }
+                    .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(20.dp))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .testTag("finance_search_btn")
+            ) {
+                Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFFFD5A4E), modifier = Modifier.size(16.dp))
+                Text("Search", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         // Statistics bar at top of Transactions: Income, Expenses, Total
@@ -676,6 +701,24 @@ fun TransactionRowItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+                if (!tx.tags.isNullOrBlank()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(top = 2.dp)
+                    ) {
+                        tx.tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }.take(4).forEach { tag ->
+                            Text(
+                                text = "#$tag",
+                                color = Color(0xFFFD5A4E),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .background(Color(0x22FD5A4E), shape = RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 5.dp, vertical = 1.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -734,6 +777,7 @@ fun EditTransactionDialog(
     var category by remember { mutableStateOf(tx.category) }
     var account by remember { mutableStateOf(tx.account) }
     var note by remember { mutableStateOf(tx.note) }
+    var tags by remember { mutableStateOf(tx.tags ?: "") }
     val context = LocalContext.current
     var dateMillis by remember {
         mutableStateOf(
@@ -848,6 +892,19 @@ fun EditTransactionDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                TextField(
+                    value = tags,
+                    onValueChange = { tags = it },
+                    label = { Text("Tags (comma-separated)") },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.Gray,
+                        focusedContainerColor = Color(0xFF222222),
+                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -860,6 +917,7 @@ fun EditTransactionDialog(
                     Button(
                         onClick = {
                             val newAmount = amount.toDoubleOrNull() ?: tx.amount
+                            val cleanTags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }.joinToString(",")
                             if (category.isNotBlank() && account.isNotBlank()) {
                                 onSave(
                                     tx.copy(
@@ -867,7 +925,8 @@ fun EditTransactionDialog(
                                         category = category.trim(),
                                         account = account.trim(),
                                         note = note.trim(),
-                                        dateString = dateFormatted
+                                        dateString = dateFormatted,
+                                        tags = cleanTags.ifEmpty { null }
                                     )
                                 )
                             }
@@ -2247,7 +2306,7 @@ fun AddTransactionDialog(
     categories: List<CategoryEntity>,
     viewModel: DashboardViewModel,
     onDismiss: () -> Unit,
-    onSave: (type: String, amount: Double, category: String, account: String, toAccount: String?, note: String, dateStr: String) -> Unit
+    onSave: (type: String, amount: Double, category: String, account: String, toAccount: String?, note: String, dateStr: String, tags: String?) -> Unit
 ) {
     var type by rememberSaveable { mutableStateOf("EXPENSE") } // "INCOME", "EXPENSE", "TRANSFER"
     var activeAmount by rememberSaveable { mutableStateOf("0") }
@@ -2255,6 +2314,7 @@ fun AddTransactionDialog(
     var selectedAccount by rememberSaveable { mutableStateOf("") }
     var selectedToAccount by rememberSaveable { mutableStateOf("") } // for Transfer
     var note by rememberSaveable { mutableStateOf("") }
+    var tags by rememberSaveable { mutableStateOf("") }
     var activeCurrency by rememberSaveable { mutableStateOf("DH") } // "DH", "₹"
 
     var showAddCategoryDialog by rememberSaveable { mutableStateOf(false) }
@@ -2605,6 +2665,31 @@ fun AddTransactionDialog(
                 }
 
                 HorizontalDivider(color = BorderHighlight)
+
+                // TAGS INPUT ROW
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Tags", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(80.dp))
+                    TextField(
+                        value = tags,
+                        onValueChange = { tags = it },
+                        placeholder = { Text("e.g. work, trip", color = MutedText, fontSize = 14.sp) },
+                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                HorizontalDivider(color = BorderHighlight)
             }
 
             // High Fidelity NUMPAD Custom Keyboard strictly matching Screenshot 1
@@ -2682,6 +2767,7 @@ fun AddTransactionDialog(
                                             "DONE" -> {
                                                 val amtParsed = activeAmount.toDoubleOrNull() ?: 0.0
                                                 if (amtParsed > 0.0) {
+                                                    val cleanTags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }.joinToString(",")
                                                     onSave(
                                                         type,
                                                         amtParsed,
@@ -2689,7 +2775,8 @@ fun AddTransactionDialog(
                                                         selectedAccount,
                                                         if (type == "TRANSFER") selectedToAccount else null,
                                                         note,
-                                                        dateFormatted
+                                                        dateFormatted,
+                                                        cleanTags.ifEmpty { null }
                                                     )
                                                 }
                                             }
