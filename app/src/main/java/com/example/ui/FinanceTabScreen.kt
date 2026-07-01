@@ -60,8 +60,12 @@ fun FinanceTabScreen(viewModel: DashboardViewModel) {
     // Auto-post any due recurring transactions when the finance tab opens.
     LaunchedEffect(Unit) { viewModel.processRecurring() }
 
-    var showAddTxSheet by rememberSaveable { mutableStateOf(false) }
-    var showSearch by rememberSaveable { mutableStateOf(false) }
+    // Plain remember (not saveable) so the add/search overlays clear when leaving the Money tab
+    // instead of "following" the user back later.
+    var showAddTxSheet by remember { mutableStateOf(false) }
+    var showSearch by remember { mutableStateOf(false) }
+    // Close any open overlay when the user switches finance sub-tabs.
+    LaunchedEffect(activeSubTab) { showAddTxSheet = false; showSearch = false }
     val currentMonthKey = remember {
         SimpleDateFormat("yyyy-MM", Locale.US).format(Date())
     }
@@ -2316,6 +2320,8 @@ fun AddTransactionDialog(
     var note by rememberSaveable { mutableStateOf("") }
     var tags by rememberSaveable { mutableStateOf("") }
     var activeCurrency by rememberSaveable { mutableStateOf("DH") } // "DH", "₹"
+    var numpadVisible by rememberSaveable { mutableStateOf(true) } // collapsible calculator keypad
+    var showCategoryMenu by remember { mutableStateOf(false) } // category dropdown list
 
     var showAddCategoryDialog by rememberSaveable { mutableStateOf(false) }
     var newCategoryText by rememberSaveable { mutableStateOf("") }
@@ -2476,9 +2482,11 @@ fun AddTransactionDialog(
 
                 HorizontalDivider(color = BorderHighlight)
 
-                // AMOUNT ROW WITH ACTIVE CURRENCY DRAWN
+                // AMOUNT ROW WITH ACTIVE CURRENCY DRAWN (tap to re-open the keypad)
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { numpadVisible = true },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Amount", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(80.dp))
@@ -2504,52 +2512,64 @@ fun AddTransactionDialog(
 
                 HorizontalDivider(color = BorderHighlight)
 
-                // CATEGORY ROW
+                // CATEGORY ROW — tap to open a vertical list (faster than side-scrolling)
                 if (type != "TRANSFER") {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Category", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(80.dp))
-                        Row(
-                            modifier = Modifier
-                                .weight(1f)
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            activeCats.forEach { cat ->
-                                val isSel = selectedCategory == cat
-                                Text(
-                                    text = cat,
-                                    color = if (isSel) Color.White else MutedText,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .background(
-                                            color = if (isSel) Color(0xFFFD5A4E) else Color(0xFF161616),
-                                            shape = RoundedCornerShape(100)
-                                        )
-                                        .clickable { selectedCategory = cat }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                                )
-                            }
-
-                            Box(
+                        Box(modifier = Modifier.weight(1f)) {
+                            Row(
                                 modifier = Modifier
-                                    .background(
-                                        color = Color(0xFF222222),
-                                        shape = RoundedCornerShape(100)
-                                    )
-                                    .clickable { showAddCategoryDialog = true }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF161616), shape = RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        numpadVisible = false // free up space so the list is visible
+                                        showCategoryMenu = true
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.LightGray, modifier = Modifier.size(12.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Category", color = Color.LightGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = selectedCategory.ifEmpty { "Select category" },
+                                    color = if (selectedCategory.isEmpty()) MutedText else Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Open categories", tint = MutedText, modifier = Modifier.size(18.dp))
+                            }
+                            DropdownMenu(
+                                expanded = showCategoryMenu,
+                                onDismissRequest = { showCategoryMenu = false },
+                                modifier = Modifier.background(Color(0xFF1E1E1E)).heightIn(max = 320.dp)
+                            ) {
+                                activeCats.forEach { cat ->
+                                    val isSel = selectedCategory == cat
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                cat,
+                                                color = if (isSel) Color(0xFFFD5A4E) else Color.White,
+                                                fontSize = 14.sp,
+                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        },
+                                        onClick = { selectedCategory = cat; showCategoryMenu = false }
+                                    )
                                 }
+                                HorizontalDivider(color = BorderHighlight)
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Add, contentDescription = "Add", tint = Color(0xFFFD5A4E), modifier = Modifier.size(14.dp))
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text("Add category", color = Color(0xFFFD5A4E), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    },
+                                    onClick = { showCategoryMenu = false; showAddCategoryDialog = true }
+                                )
                             }
                         }
                     }
@@ -2692,6 +2712,56 @@ fun AddTransactionDialog(
                 HorizontalDivider(color = BorderHighlight)
             }
 
+            // Save action shared by the keypad DONE key and the collapsed Save bar
+            val doSave: () -> Unit = {
+                val amtParsed = activeAmount.toDoubleOrNull() ?: 0.0
+                if (amtParsed > 0.0) {
+                    val cleanTags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }.joinToString(",")
+                    onSave(
+                        type,
+                        amtParsed,
+                        if (type == "TRANSFER") "Transfer" else selectedCategory,
+                        selectedAccount,
+                        if (type == "TRANSFER") selectedToAccount else null,
+                        note,
+                        dateFormatted,
+                        cleanTags.ifEmpty { null }
+                    )
+                }
+            }
+
+            if (!numpadVisible) {
+                // Keypad minimized -> compact Save bar. Tap the Amount field to bring the keypad back.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF141414))
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.weight(1f).clickable { numpadVisible = true },
+                        color = Color(0xFF222222),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(
+                            "Show keypad", color = MutedText, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
+                        )
+                    }
+                    Surface(
+                        modifier = Modifier.weight(1f).clickable { doSave() },
+                        color = Color(0xFFFD5A4E),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(
+                            "DONE", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
+                        )
+                    }
+                }
+            } else
             // High Fidelity NUMPAD Custom Keyboard strictly matching Screenshot 1
             Column(
                 modifier = Modifier
@@ -2762,23 +2832,10 @@ fun AddTransactionDialog(
                                                 // Negative amount or math or ignored
                                             }
                                             "MINIMIZE" -> {
-                                                // Dismiss/closes soft custom panel
+                                                numpadVisible = false
                                             }
                                             "DONE" -> {
-                                                val amtParsed = activeAmount.toDoubleOrNull() ?: 0.0
-                                                if (amtParsed > 0.0) {
-                                                    val cleanTags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }.joinToString(",")
-                                                    onSave(
-                                                        type,
-                                                        amtParsed,
-                                                        if (type == "TRANSFER") "Transfer" else selectedCategory,
-                                                        selectedAccount,
-                                                        if (type == "TRANSFER") selectedToAccount else null,
-                                                        note,
-                                                        dateFormatted,
-                                                        cleanTags.ifEmpty { null }
-                                                    )
-                                                }
+                                                doSave()
                                             }
                                             else -> {
                                                 if (activeAmount == "0") {
