@@ -525,18 +525,11 @@ fun GradientText(
 fun MainAppContainer(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
     val tabIds = listOf("today", "goals", "learning", "stats", "sleep", "finance", "week")
     val pagerState = rememberPagerState(initialPage = 0) { tabIds.size }
-    var selectedTab by rememberSaveable { mutableStateOf("today") }
-
-    // Keep pager and bottom nav in sync
-    LaunchedEffect(pagerState.currentPage) {
-        selectedTab = tabIds[pagerState.currentPage]
-    }
-    LaunchedEffect(selectedTab) {
-        val idx = tabIds.indexOf(selectedTab)
-        if (idx >= 0 && pagerState.currentPage != idx) {
-            pagerState.animateScrollToPage(idx)
-        }
-    }
+    val scope = rememberCoroutineScope()
+    // Single source of truth: the pager's current page drives the nav highlight.
+    // (The previous two-way LaunchedEffect sync fought itself on non-adjacent jumps,
+    // interrupting the scroll and leaving it stuck half-way between two tabs.)
+    val selectedTab = tabIds[pagerState.currentPage]
 
     Scaffold(
         modifier = Modifier
@@ -545,7 +538,21 @@ fun MainAppContainer(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
         bottomBar = {
             BottomNavBar(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
+                onTabSelected = { id ->
+                    val target = tabIds.indexOf(id)
+                    if (target >= 0 && target != pagerState.currentPage) {
+                        scope.launch {
+                            val current = pagerState.currentPage
+                            // For non-adjacent tabs, hop instantly to the neighbour of the target,
+                            // then animate a single page. Always one clean slide — no flashing
+                            // through the tabs in between, and it can't get stuck mid-scroll.
+                            if (kotlin.math.abs(target - current) > 1) {
+                                pagerState.scrollToPage(if (target > current) target - 1 else target + 1)
+                            }
+                            pagerState.animateScrollToPage(target)
+                        }
+                    }
+                }
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing
