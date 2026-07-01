@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val RecAccent = Color(0xFFFD5A4E)
+private val RecAccent = Accent
 
 private fun fmtMoney(v: Double): String = String.format("DH %,.2f", v)
 
@@ -67,13 +67,13 @@ fun RecurringSubScreen(
     Column(modifier = Modifier.fillMaxSize().background(CanvasBg)) {
         // Header
         Row(
-            modifier = Modifier.fillMaxWidth().background(Color(0xFF141414))
+            modifier = Modifier.fillMaxWidth().background(LayerCard)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Recurring", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Recurring", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text("Auto-posted when due", color = MutedText, fontSize = 11.sp)
             }
             Surface(
@@ -81,7 +81,7 @@ fun RecurringSubScreen(
                 color = RecAccent,
                 shape = RoundedCornerShape(20.dp)
             ) {
-                Text("+ Add", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                Text("+ Add", color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp))
             }
         }
@@ -136,7 +136,7 @@ fun RecurringSubScreen(
 
 @Composable
 private fun RecurringRow(rule: RecurringEntity, onClick: () -> Unit, onToggleActive: () -> Unit) {
-    val amountColor = if (rule.type == "INCOME") BlueIncome else if (rule.type == "EXPENSE") RedExpense else Color.White
+    val amountColor = if (rule.type == "INCOME") BlueIncome else if (rule.type == "EXPENSE") RedExpense else PrimaryText
     Surface(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         color = LayerCard,
@@ -150,7 +150,7 @@ private fun RecurringRow(rule: RecurringEntity, onClick: () -> Unit, onToggleAct
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     if (rule.type == "TRANSFER") "Transfer" else rule.category,
-                    color = if (rule.active) Color.White else MutedText,
+                    color = if (rule.active) PrimaryText else MutedText,
                     fontSize = 14.sp, fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(2.dp))
@@ -170,10 +170,10 @@ private fun RecurringRow(rule: RecurringEntity, onClick: () -> Unit, onToggleAct
                     checked = rule.active,
                     onCheckedChange = { onToggleActive() },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
+                        checkedThumbColor = PrimaryText,
                         checkedTrackColor = RecAccent,
                         uncheckedThumbColor = MutedText,
-                        uncheckedTrackColor = Color(0xFF2A2A2A)
+                        uncheckedTrackColor = ChipBg
                     )
                 )
             }
@@ -208,7 +208,7 @@ private fun RecurringEditDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(color = LayerCard, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, BorderHighlight)) {
             Column(modifier = Modifier.padding(20.dp).fillMaxWidth()) {
-                Text(if (existing == null) "New recurring" else "Edit recurring", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(if (existing == null) "New recurring" else "Edit recurring", color = PrimaryText, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(14.dp))
 
                 // Type segmented
@@ -220,10 +220,10 @@ private fun RecurringEditDialog(
                                 type = t
                                 if (t != "TRANSFER" && category !in categories.filter { it.type == t }.map { c -> c.name }) category = ""
                             },
-                            color = if (sel) RecAccent else Color(0xFF222222),
+                            color = if (sel) RecAccent else ChipBg,
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text(lbl, color = if (sel) Color.White else MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                            Text(lbl, color = if (sel) PrimaryText else MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
                         }
@@ -255,10 +255,10 @@ private fun RecurringEditDialog(
                         val sel = frequency == f
                         Surface(
                             modifier = Modifier.weight(1f).clickable { frequency = f },
-                            color = if (sel) RecAccent else Color(0xFF222222),
+                            color = if (sel) RecAccent else ChipBg,
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text(lbl, color = if (sel) Color.White else MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                            Text(lbl, color = if (sel) PrimaryText else MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
                         }
@@ -309,7 +309,7 @@ private fun RecurringEditDialog(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = RecAccent)
-                    ) { Text("Save", color = Color.White) }
+                    ) { Text("Save", color = PrimaryText) }
                 }
             }
         }
@@ -327,8 +327,8 @@ private fun FieldTextInput(value: String, label: String, keyboard: KeyboardType,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = RecAccent,
             unfocusedBorderColor = BorderHighlight,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
+            focusedTextColor = PrimaryText,
+            unfocusedTextColor = PrimaryText,
             cursorColor = RecAccent,
             focusedLabelColor = RecAccent,
             unfocusedLabelColor = MutedText
@@ -346,7 +346,7 @@ private fun DropdownField(label: String, value: String, options: List<String>, o
         Box {
             Surface(
                 modifier = Modifier.fillMaxWidth().clickable { expanded = true },
-                color = Color(0xFF222222),
+                color = ChipBg,
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, BorderHighlight)
             ) {
@@ -355,7 +355,7 @@ private fun DropdownField(label: String, value: String, options: List<String>, o
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(value, color = if (value == "Select") MutedText else Color.White, fontSize = 14.sp)
+                    Text(value, color = if (value == "Select") MutedText else PrimaryText, fontSize = 14.sp)
                     Text("▾", color = MutedText, fontSize = 12.sp)
                 }
             }

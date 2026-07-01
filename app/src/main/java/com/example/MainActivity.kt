@@ -72,6 +72,14 @@ import com.example.ui.theme.InstaPurple
 import com.example.ui.theme.InstaRed
 import com.example.ui.theme.InstaOrange
 import com.example.ui.theme.BrandAccent
+import com.example.ui.theme.Accent
+import com.example.ui.theme.AccentGradient
+import com.example.ui.theme.DividerColor
+import com.example.ui.theme.PrimaryText
+import com.example.ui.theme.ChipBg
+import com.example.ui.theme.TertiaryText
+import com.example.ui.theme.NegativeRed
+import com.example.ui.theme.PositiveGreen
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -211,7 +219,7 @@ fun SplashScreen(onFinished: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A)),
+            .background(CanvasBg),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -232,7 +240,7 @@ fun SplashScreen(onFinished: () -> Unit) {
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "Track It. Build It. Level Up.",
-                color = Color(0xFF888888),
+                color = MutedText,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 letterSpacing = 0.5.sp
@@ -259,7 +267,7 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A))
+            .background(CanvasBg)
     ) {
         HorizontalPager(
             state = pagerState,
@@ -292,7 +300,7 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
                         modifier = Modifier
                             .size(width = if (isActive) 22.dp else 6.dp, height = 6.dp)
                             .background(
-                                if (isActive) InstaPurple else Color(0xFF333333),
+                                if (isActive) InstaPurple else DividerColor,
                                 androidx.compose.foundation.shape.RoundedCornerShape(100)
                             )
                     )
@@ -307,13 +315,13 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isLast && userName.isNotBlank()) InstaPurple else Color(0xFF222222)
+                    containerColor = if (isLast && userName.isNotBlank()) InstaPurple else ChipBg
                 ),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
             ) {
                 Text(
                     text = if (isLast) "Get Started →" else "Next →",
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Black
                 )
@@ -323,7 +331,7 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
                     onClick = { scope.launch { pagerState.animateScrollToPage(2) } },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Skip", color = Color(0xFF444444), fontSize = 12.sp)
+                    Text("Skip", color = DividerColor, fontSize = 12.sp)
                 }
             }
         }
@@ -348,14 +356,14 @@ fun OnboardPage1() {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             "Your Self-Improvement Hub",
-            color = Color(0xFF777777),
+            color = MutedText,
             fontSize = 15.sp,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             "Build habits. Crush goals. Track sleep.\nMaster your finances. All in one place.",
-            color = Color(0xFF555555),
+            color = DividerColor,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
             lineHeight = 22.sp
@@ -379,7 +387,7 @@ fun OnboardPage2() {
     ) {
         Text(
             "What's inside",
-            color = Color.White,
+            color = PrimaryText,
             fontSize = 26.sp,
             fontWeight = FontWeight.Black
         )
@@ -393,7 +401,7 @@ fun OnboardPage2() {
             ) {
                 Text(icon, fontSize = 26.sp, modifier = Modifier.padding(end = 14.dp, top = 2.dp))
                 Column {
-                    Text(title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text(title, color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     Text(desc, color = MutedText, fontSize = 12.sp, lineHeight = 17.sp)
                 }
             }
@@ -418,7 +426,7 @@ fun OnboardPage3(userName: String, onNameChange: (String) -> Unit) {
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             "What should we call you?",
-            color = Color(0xFF888888),
+            color = MutedText,
             fontSize = 16.sp,
             textAlign = TextAlign.Center
         )
@@ -429,18 +437,18 @@ fun OnboardPage3(userName: String, onNameChange: (String) -> Unit) {
             placeholder = {
                 Text(
                     "Enter your name",
-                    color = Color(0xFF444444),
+                    color = DividerColor,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
             },
             colors = TextFieldDefaults.colors(
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedContainerColor = Color(0xFF1A1A1A),
-                unfocusedContainerColor = Color(0xFF141414),
+                focusedTextColor = PrimaryText,
+                unfocusedTextColor = PrimaryText,
+                focusedContainerColor = LayerCard,
+                unfocusedContainerColor = LayerCard,
                 focusedIndicatorColor = InstaPurple,
-                unfocusedIndicatorColor = Color(0xFF333333)
+                unfocusedIndicatorColor = DividerColor
             ),
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
@@ -448,13 +456,13 @@ fun OnboardPage3(userName: String, onNameChange: (String) -> Unit) {
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                color = Color.White
+                color = PrimaryText
             )
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             "Your name appears in the app header. You can change it any time in settings.",
-            color = Color(0xFF444444),
+            color = DividerColor,
             fontSize = 11.sp,
             textAlign = TextAlign.Center,
             lineHeight = 16.sp
@@ -476,7 +484,7 @@ fun GuideTip(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D0D2B)),
+        colors = CardDefaults.cardColors(containerColor = LayerCard),
         border = BorderStroke(1.dp, InstaPurple.copy(alpha = 0.5f)),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -489,7 +497,7 @@ fun GuideTip(
             Spacer(modifier = Modifier.width(10.dp))
             Text(
                 text = text,
-                color = Color.White,
+                color = PrimaryText,
                 fontSize = 13.sp,
                 lineHeight = 19.sp,
                 modifier = Modifier.weight(1f)
@@ -616,7 +624,7 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                 modifier = Modifier
                     .size(42.dp)
                     .clip(CircleShape)
-                    .background(Brush.linearGradient(listOf(InstaPurple.copy(alpha = 0.7f), Color(0xFF1A1A1A))))
+                    .background(AccentGradient)
                     .border(
                         BorderStroke(1.5.dp, Brush.sweepGradient(listOf(InstaPurple, BrandAccent, InstaOrange, InstaPurple))),
                         CircleShape
@@ -632,7 +640,7 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                 } else {
                     Text(
                         userName.trim().take(1).uppercase(),
-                        color = Color.White,
+                        color = PrimaryText,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black
                     )
@@ -668,7 +676,7 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
             Row(
                 modifier = Modifier
                     .background(LayerCard, shape = RoundedCornerShape(100))
-                    .border(1.dp, BorderHighlight, shape = RoundedCornerShape(100))
+                    .border(1.dp, DividerColor, shape = RoundedCornerShape(100))
                     .padding(horizontal = 14.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -676,7 +684,7 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                 Text(text = "🔥", fontSize = 14.sp)
                 Text(
                     text = "$appOpenStreak DAY${if (appOpenStreak != 1) "S" else ""}",
-                    color = Color.White,
+                    color = Accent,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Black
                 )
@@ -743,12 +751,12 @@ fun SettingsButton(viewModel: DashboardViewModel) {
     if (showClearConfirm) {
         AlertDialog(
             onDismissRequest = { showClearConfirm = false },
-            containerColor = Color(0xFF1A1A1A),
-            title = { Text("Start fresh?", color = Color.White, fontWeight = FontWeight.Bold) },
+            containerColor = LayerCard,
+            title = { Text("Start fresh?", color = PrimaryText, fontWeight = FontWeight.Bold) },
             text = {
                 Text(
                     "This permanently deletes ALL your data — transactions, habits, goals, sleep, roadmaps, achievements and mottos. Consider exporting a backup first. This cannot be undone.",
-                    color = Color.Gray, fontSize = 13.sp, lineHeight = 18.sp
+                    color = MutedText, fontSize = 13.sp, lineHeight = 18.sp
                 )
             },
             confirmButton = {
@@ -758,10 +766,10 @@ fun SettingsButton(viewModel: DashboardViewModel) {
                     showClearConfirm = false
                     showSettings = false
                     Toast.makeText(context, "Cleared — fresh start ✨", Toast.LENGTH_SHORT).show()
-                }) { Text("Delete everything", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold) }
+                }) { Text("Delete everything", color = NegativeRed, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = { showClearConfirm = false }) { Text("Cancel", color = Color.White) }
+                TextButton(onClick = { showClearConfirm = false }) { Text("Cancel", color = PrimaryText) }
             }
         )
     }
@@ -769,13 +777,13 @@ fun SettingsButton(viewModel: DashboardViewModel) {
     if (showSettings) {
         Dialog(onDismissRequest = { showSettings = false }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(20.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(8.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Settings", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("Settings", color = PrimaryText, fontSize = 18.sp, fontWeight = FontWeight.Black)
                     Text(
                         "Back up everything — habits, money, goals, sleep, roadmaps — to a file you can save to Drive or share. Restore it anytime, on a new phone or after reinstalling.",
                         color = MutedText, fontSize = 12.sp, lineHeight = 17.sp
@@ -785,13 +793,13 @@ fun SettingsButton(viewModel: DashboardViewModel) {
                         colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
-                    ) { Text("⬇   Export / Back up", color = Color.White, fontWeight = FontWeight.Bold) }
+                    ) { Text("⬇   Export / Back up", color = PrimaryText, fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = { showSettings = false; importLauncher.launch(arrayOf("application/json")) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A2A2A)),
+                        colors = ButtonDefaults.buttonColors(containerColor = ChipBg),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
-                    ) { Text("⬆   Import / Restore", color = Color.White, fontWeight = FontWeight.Bold) }
+                    ) { Text("⬆   Import / Restore", color = PrimaryText, fontWeight = FontWeight.Bold) }
                     Text("Restoring replaces your current data with the backup.", color = Color(0xFFFFAB40), fontSize = 10.sp)
                     HorizontalDivider(color = BorderHighlight)
                     Button(
@@ -799,7 +807,7 @@ fun SettingsButton(viewModel: DashboardViewModel) {
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A1515)),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
-                    ) { Text("🗑   Start fresh (clear all data)", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold) }
+                    ) { Text("🗑   Start fresh (clear all data)", color = NegativeRed, fontWeight = FontWeight.Bold) }
                     TextButton(onClick = { showSettings = false }, modifier = Modifier.align(Alignment.End)) {
                         Text("Close", color = MutedText)
                     }
@@ -846,8 +854,8 @@ fun BottomNavBar(
         modifier = Modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars),
-        color = Color(0xFF111111),
-        border = BorderStroke(1.dp, BorderHighlight)
+        color = LayerCard,
+        border = BorderStroke(1.dp, DividerColor)
     ) {
         Row(
             modifier = Modifier
@@ -869,7 +877,7 @@ fun BottomNavBar(
             tabItems.forEach { item ->
                 val isSelected = selectedTab == item.id
                 val navColor by animateColorAsState(
-                    targetValue = if (isSelected) Color.White else MutedText,
+                    targetValue = if (isSelected) Accent else MutedText,
                     animationSpec = tween(250), label = "navColor_${item.id}"
                 )
                 val indicatorWidth by animateDpAsState(
@@ -957,7 +965,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
             ) {
                 Text(
                     text = "Daily Habits Logs",
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
@@ -1007,7 +1015,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                                             .clip(CircleShape)
                                             .background(
                                                 if (habit.isCompleted) InstaGradient else Brush.linearGradient(
-                                                    listOf(Color(0xFF222222), Color(0xFF222222))
+                                                    listOf(ChipBg, ChipBg)
                                                 )
                                             )
                                             .padding(4.dp),
@@ -1017,7 +1025,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                                             Icon(
                                                 Icons.Default.Check,
                                                 contentDescription = "Completed",
-                                                tint = Color.White,
+                                                tint = PrimaryText,
                                                 modifier = Modifier.size(14.dp)
                                             )
                                         }
@@ -1025,7 +1033,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
 
                                     Text(
                                         text = habit.name,
-                                        color = if (habit.isCompleted) MutedText else Color.White,
+                                        color = if (habit.isCompleted) MutedText else PrimaryText,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Medium,
                                         overflow = TextOverflow.Ellipsis,
@@ -1057,7 +1065,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                                         Icon(
                                             Icons.Default.Edit,
                                             contentDescription = "Edit",
-                                            tint = Color.Gray.copy(alpha = 0.6f),
+                                            tint = MutedText.copy(alpha = 0.6f),
                                             modifier = Modifier.size(14.dp)
                                         )
                                     }
@@ -1089,7 +1097,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
             ) {
                 Text(
                     text = "Daily Intent (Non-negotiables)",
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
@@ -1139,7 +1147,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                                             .clip(CircleShape)
                                             .background(
                                                 if (intent.isCompleted) InstaGradient else Brush.linearGradient(
-                                                    listOf(Color(0xFF222222), Color(0xFF222222))
+                                                    listOf(ChipBg, ChipBg)
                                                 )
                                             )
                                             .padding(4.dp),
@@ -1149,7 +1157,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                                             Icon(
                                                 Icons.Default.Check,
                                                 contentDescription = "Completed",
-                                                tint = Color.White,
+                                                tint = PrimaryText,
                                                 modifier = Modifier.size(12.dp)
                                             )
                                         }
@@ -1157,7 +1165,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
 
                                     Text(
                                         text = intent.name,
-                                        color = if (intent.isCompleted) MutedText else Color.White,
+                                        color = if (intent.isCompleted) MutedText else PrimaryText,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Medium,
                                         maxLines = 2,
@@ -1172,7 +1180,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                                     Icon(
                                         Icons.Default.Edit,
                                         contentDescription = "Edit",
-                                        tint = Color.Gray.copy(alpha = 0.6f),
+                                        tint = MutedText.copy(alpha = 0.6f),
                                         modifier = Modifier.size(14.dp)
                                     )
                                 }
@@ -1200,7 +1208,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
     if (showAddHabit) {
         Dialog(onDismissRequest = { showAddHabit = false }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier
@@ -1215,7 +1223,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                         text = "Track New Habit",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = PrimaryText
                     )
 
                     OutlinedTextField(
@@ -1223,10 +1231,10 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                         onValueChange = { newHabitName = it },
                         placeholder = { Text("e.g. Mass gainer (12 PM)", color = MutedText, fontSize = 13.sp) },
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF2A2A2A),
-                            unfocusedContainerColor = Color(0xFF1E1E1E)
+                            focusedTextColor = PrimaryText,
+                            unfocusedTextColor = PrimaryText,
+                            focusedContainerColor = ChipBg,
+                            unfocusedContainerColor = LayerCard
                         ),
                         modifier = Modifier.fillMaxWidth().testTag("habit_input_field")
                     )
@@ -1246,14 +1254,14 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                             modifier = Modifier.weight(1f).testTag("save_habit_btn")
                         ) {
-                            Text("Save", color = Color.White)
+                            Text("Save", color = PrimaryText)
                         }
                         Button(
                             onClick = { showAddHabit = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Cancel", color = Color.White)
+                            Text("Cancel", color = PrimaryText)
                         }
                     }
                 }
@@ -1266,19 +1274,19 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
         var editName by remember(habit.id) { mutableStateOf(habit.name) }
         Dialog(onDismissRequest = { editingHabit = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Edit Habit", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Edit Habit", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
                     OutlinedTextField(
                         value = editName,
                         onValueChange = { editName = it },
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)
+                            focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText,
+                            focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -1292,12 +1300,12 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                             modifier = Modifier.weight(1f)
-                        ) { Text("Save", color = Color.White) }
+                        ) { Text("Save", color = PrimaryText) }
                         Button(
                             onClick = { editingHabit = null },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
-                        ) { Text("Cancel", color = Color.White) }
+                        ) { Text("Cancel", color = PrimaryText) }
                     }
                 }
             }
@@ -1309,19 +1317,19 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
         var editName by remember(intent.id) { mutableStateOf(intent.name) }
         Dialog(onDismissRequest = { editingIntent = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Edit Intent", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Edit Intent", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
                     OutlinedTextField(
                         value = editName,
                         onValueChange = { editName = it },
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)
+                            focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText,
+                            focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -1335,12 +1343,12 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                             modifier = Modifier.weight(1f)
-                        ) { Text("Save", color = Color.White) }
+                        ) { Text("Save", color = PrimaryText) }
                         Button(
                             onClick = { editingIntent = null },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
-                        ) { Text("Cancel", color = Color.White) }
+                        ) { Text("Cancel", color = PrimaryText) }
                     }
                 }
             }
@@ -1351,7 +1359,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
     if (showAddIntent) {
         Dialog(onDismissRequest = { showAddIntent = false }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier
@@ -1366,7 +1374,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                         text = "Add Daily Intent",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = PrimaryText
                     )
 
                     OutlinedTextField(
@@ -1374,10 +1382,10 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                         onValueChange = { newIntentName = it },
                         placeholder = { Text("e.g. Read Arabic vocabulary (10 words)", color = MutedText, fontSize = 13.sp) },
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF2A2A2A),
-                            unfocusedContainerColor = Color(0xFF1E1E1E)
+                            focusedTextColor = PrimaryText,
+                            unfocusedTextColor = PrimaryText,
+                            focusedContainerColor = ChipBg,
+                            unfocusedContainerColor = LayerCard
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -1397,14 +1405,14 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Save", color = Color.White)
+                            Text("Save", color = PrimaryText)
                         }
                         Button(
                             onClick = { showAddIntent = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Cancel", color = Color.White)
+                            Text("Cancel", color = PrimaryText)
                         }
                     }
                 }
@@ -1464,7 +1472,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
             ) {
                 Text(
                     text = "Core Point-System Goals",
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1503,7 +1511,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = goal.name,
-                                color = Color.White,
+                                color = PrimaryText,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Black
                             )
@@ -1534,7 +1542,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(10.dp)
-                            .background(Color(0xFF222222), shape = RoundedCornerShape(100))
+                            .background(ChipBg, shape = RoundedCornerShape(100))
                     ) {
                         Box(
                             modifier = Modifier
@@ -1553,7 +1561,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                         Surface(
                             color = when (goal.status) {
                                 "ACTIVE" -> InstaPurple.copy(alpha = 0.2f)
-                                "NEXT" -> Color.DarkGray.copy(alpha = 0.4f)
+                                "NEXT" -> MutedText.copy(alpha = 0.4f)
                                 else -> InstaOrange.copy(alpha = 0.2f)
                             },
                             shape = RoundedCornerShape(6.dp)
@@ -1562,7 +1570,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                                 text = goal.status,
                                 color = when (goal.status) {
                                     "ACTIVE" -> InstaPurple
-                                    "NEXT" -> Color.LightGray
+                                    "NEXT" -> MutedText
                                     else -> InstaOrange
                                 },
                                 fontSize = 9.sp,
@@ -1599,7 +1607,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                                 Icon(
                                     Icons.Default.Edit,
                                     contentDescription = "Edit",
-                                    tint = Color.Gray.copy(alpha = 0.6f),
+                                    tint = MutedText.copy(alpha = 0.6f),
                                     modifier = Modifier.size(14.dp)
                                 )
                             }
@@ -1633,7 +1641,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                             ) {
                                 Text(
                                     text = "- ${log.activity}",
-                                    color = Color.LightGray,
+                                    color = MutedText,
                                     fontSize = 11.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -1650,7 +1658,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                                     Icon(
                                         Icons.Default.Edit,
                                         contentDescription = "Edit Log",
-                                        tint = Color.Gray.copy(0.5f),
+                                        tint = MutedText.copy(0.5f),
                                         modifier = Modifier
                                             .size(13.dp)
                                             .clickable { editingLog = log }
@@ -1678,7 +1686,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
     if (showAddGoal) {
         Dialog(onDismissRequest = { showAddGoal = false }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier
@@ -1689,7 +1697,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Add Custom Goal", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Add Custom Goal", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
 
                     OutlinedTextField(
                         value = goalName,
@@ -1717,7 +1725,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                                     .weight(1f)
                                     .background(
                                         if (activeVal) InstaGradient else Brush.linearGradient(
-                                            listOf(Color(0xFF2A2A2A), Color(0xFF2A2A2A))
+                                            listOf(ChipBg, ChipBg)
                                         ),
                                         shape = RoundedCornerShape(10.dp)
                                     )
@@ -1725,7 +1733,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                                     .padding(8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(targetStatus, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                Text(targetStatus, color = PrimaryText, fontSize = 10.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -1750,7 +1758,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                         }
                         Button(
                             onClick = { showAddGoal = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text("Cancel")
@@ -1765,7 +1773,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
     if (showAddPointsId != null) {
         Dialog(onDismissRequest = { showAddPointsId = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier
@@ -1776,7 +1784,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Log Goal Progress Activity", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Log Goal Progress Activity", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
 
                     OutlinedTextField(
                         value = logActivityName,
@@ -1813,7 +1821,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                         }
                         Button(
                             onClick = { showAddPointsId = null },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text("Cancel")
@@ -1831,33 +1839,33 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
         var editStatus by remember(goal.id) { mutableStateOf(goal.status) }
         Dialog(onDismissRequest = { editingGoal = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Edit Goal", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Edit Goal", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
                     OutlinedTextField(
                         value = editName, onValueChange = { editName = it },
                         placeholder = { Text("Goal name", color = MutedText) },
-                        colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)),
+                        colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard),
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = editWhy, onValueChange = { editWhy = it },
                         placeholder = { Text("Why this goal?", color = MutedText) },
-                        colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)),
+                        colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard),
                         modifier = Modifier.fillMaxWidth()
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf("ACTIVE", "NEXT", "SOMEDAY").forEach { s ->
                             Box(
                                 modifier = Modifier.weight(1f)
-                                    .background(if (editStatus == s) InstaGradient else Brush.linearGradient(listOf(Color(0xFF2A2A2A), Color(0xFF2A2A2A))), shape = RoundedCornerShape(10.dp))
+                                    .background(if (editStatus == s) InstaGradient else Brush.linearGradient(listOf(ChipBg, ChipBg)), shape = RoundedCornerShape(10.dp))
                                     .clickable { editStatus = s }.padding(8.dp),
                                 contentAlignment = Alignment.Center
-                            ) { Text(s, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black) }
+                            ) { Text(s, color = PrimaryText, fontSize = 10.sp, fontWeight = FontWeight.Black) }
                         }
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1870,7 +1878,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent), modifier = Modifier.weight(1f)
                         ) { Text("Save") }
-                        Button(onClick = { editingGoal = null }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray), modifier = Modifier.weight(1f)) { Text("Cancel") }
+                        Button(onClick = { editingGoal = null }, colors = ButtonDefaults.buttonColors(containerColor = MutedText), modifier = Modifier.weight(1f)) { Text("Cancel") }
                     }
                 }
             }
@@ -1883,23 +1891,23 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
         var editHours by remember(log.id) { mutableStateOf(log.hours.toString()) }
         Dialog(onDismissRequest = { editingLog = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Edit Log Entry", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Edit Log Entry", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
                     OutlinedTextField(
                         value = editActivity, onValueChange = { editActivity = it },
                         placeholder = { Text("Activity description", color = MutedText) },
-                        colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)),
+                        colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard),
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = editHours, onValueChange = { editHours = it },
                         placeholder = { Text("Hours", color = MutedText) },
-                        colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)),
+                        colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard),
                         modifier = Modifier.fillMaxWidth()
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1913,7 +1921,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent), modifier = Modifier.weight(1f)
                         ) { Text("Save") }
-                        Button(onClick = { editingLog = null }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray), modifier = Modifier.weight(1f)) { Text("Cancel") }
+                        Button(onClick = { editingLog = null }, colors = ButtonDefaults.buttonColors(containerColor = MutedText), modifier = Modifier.weight(1f)) { Text("Cancel") }
                     }
                 }
             }
@@ -1972,7 +1980,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                 ) {
                     Text(
                         text = tab,
-                        color = if (active) Color.White else MutedText,
+                        color = if (active) PrimaryText else MutedText,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
@@ -1993,9 +2001,9 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Topic", modifier = Modifier.size(16.dp), tint = Color.White)
+                Icon(Icons.Default.Add, contentDescription = "Add Topic", modifier = Modifier.size(16.dp), tint = PrimaryText)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Add Topic", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Add Topic", fontSize = 11.sp, color = PrimaryText, fontWeight = FontWeight.Bold)
             }
 
             Button(
@@ -2005,9 +2013,9 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Word", modifier = Modifier.size(16.dp), tint = Color.White)
+                Icon(Icons.Default.Add, contentDescription = "Add Word", modifier = Modifier.size(16.dp), tint = PrimaryText)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Add Word", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Add Word", fontSize = 11.sp, color = PrimaryText, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -2028,7 +2036,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
 
             if (filteredLearning.isNotEmpty()) {
                 item {
-                    Text("Academic & IT Topics", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Academic & IT Topics", color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 items(filteredLearning) { item ->
@@ -2044,7 +2052,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(item.name, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                                Text(item.name, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
                                 Text(item.subtext, color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -2056,7 +2064,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                             }
 
                             IconButton(onClick = { editingItem = item }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray.copy(0.6f))
+                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MutedText.copy(0.6f))
                             }
                             IconButton(onClick = { viewModel.deleteLearning(item.id) }) {
                                 Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(0.6f))
@@ -2091,7 +2099,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                         item {
                             Text(
                                 text = sectionTitle,
-                                color = Color.White,
+                                color = PrimaryText,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(top = 10.dp)
@@ -2113,13 +2121,13 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = item.word,
-                                            color = Color.White,
+                                            color = PrimaryText,
                                             fontSize = 15.sp,
                                             fontWeight = FontWeight.Black
                                         )
                                         Text(
                                             text = "Meaning: ${item.meaning}",
-                                            color = Color.LightGray,
+                                            color = MutedText,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Normal
                                         )
@@ -2144,7 +2152,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                                     }
 
                                     IconButton(onClick = { editingWord = item }) {
-                                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray.copy(0.6f))
+                                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MutedText.copy(0.6f))
                                     }
                                     IconButton(onClick = { viewModel.deleteWord(item.id) }) {
                                         Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(0.6f))
@@ -2162,7 +2170,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
     if (showAddItem) {
         Dialog(onDismissRequest = { showAddItem = false }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier
@@ -2173,7 +2181,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Track Academic Topic", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Track Academic Topic", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
 
                     OutlinedTextField(
                         value = itemName,
@@ -2201,7 +2209,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                                     .weight(1f)
                                     .background(
                                         if (activeVal) InstaGradient else Brush.linearGradient(
-                                            listOf(Color(0xFF2A2A2A), Color(0xFF2A2A2A))
+                                            listOf(ChipBg, ChipBg)
                                         ),
                                         shape = RoundedCornerShape(8.dp)
                                     )
@@ -2209,7 +2217,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                                     .padding(8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(cat, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                                Text(cat, color = PrimaryText, fontSize = 9.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -2234,7 +2242,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                         }
                         Button(
                             onClick = { showAddItem = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text("Cancel")
@@ -2249,7 +2257,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
     if (showAddWord) {
         Dialog(onDismissRequest = { showAddWord = false }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier
@@ -2260,7 +2268,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Add Word Entry", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Add Word Entry", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
 
                     OutlinedTextField(
                         value = wordOriginal,
@@ -2288,7 +2296,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                                     .weight(1f)
                                     .background(
                                         if (activeVal) InstaGradient else Brush.linearGradient(
-                                            listOf(Color(0xFF2A2A2A), Color(0xFF2A2A2A))
+                                            listOf(ChipBg, ChipBg)
                                         ),
                                         shape = RoundedCornerShape(8.dp)
                                     )
@@ -2296,7 +2304,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                                     .padding(8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(lang, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                                Text(lang, color = PrimaryText, fontSize = 9.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -2321,7 +2329,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                         }
                         Button(
                             onClick = { showAddWord = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = MutedText),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text("Cancel")
@@ -2340,32 +2348,32 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
         var eStatus by remember(item.id) { mutableStateOf(item.status) }
         Dialog(onDismissRequest = { editingItem = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Edit Topic", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    OutlinedTextField(value = eName, onValueChange = { eName = it }, placeholder = { Text("Topic name", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)), modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = eSubtext, onValueChange = { eSubtext = it }, placeholder = { Text("Focus note", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)), modifier = Modifier.fillMaxWidth())
+                    Text("Edit Topic", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
+                    OutlinedTextField(value = eName, onValueChange = { eName = it }, placeholder = { Text("Topic name", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard), modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = eSubtext, onValueChange = { eSubtext = it }, placeholder = { Text("Focus note", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard), modifier = Modifier.fillMaxWidth())
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         listOf("IT", "COURSES", "LANGUAGES").forEach { cat ->
-                            Box(modifier = Modifier.weight(1f).background(if (eCat == cat) InstaGradient else Brush.linearGradient(listOf(Color(0xFF2A2A2A), Color(0xFF2A2A2A))), shape = RoundedCornerShape(8.dp)).clickable { eCat = cat }.padding(8.dp), contentAlignment = Alignment.Center) {
-                                Text(cat, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                            Box(modifier = Modifier.weight(1f).background(if (eCat == cat) InstaGradient else Brush.linearGradient(listOf(ChipBg, ChipBg)), shape = RoundedCornerShape(8.dp)).clickable { eCat = cat }.padding(8.dp), contentAlignment = Alignment.Center) {
+                                Text(cat, color = PrimaryText, fontSize = 9.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         listOf("ACTIVE", "NEXT", "SOMEDAY").forEach { s ->
-                            Box(modifier = Modifier.weight(1f).background(if (eStatus == s) InstaGradient else Brush.linearGradient(listOf(Color(0xFF2A2A2A), Color(0xFF2A2A2A))), shape = RoundedCornerShape(8.dp)).clickable { eStatus = s }.padding(8.dp), contentAlignment = Alignment.Center) {
-                                Text(s, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                            Box(modifier = Modifier.weight(1f).background(if (eStatus == s) InstaGradient else Brush.linearGradient(listOf(ChipBg, ChipBg)), shape = RoundedCornerShape(8.dp)).clickable { eStatus = s }.padding(8.dp), contentAlignment = Alignment.Center) {
+                                Text(s, color = PrimaryText, fontSize = 9.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(onClick = { if (eName.isNotBlank()) { viewModel.editLearning(item, eName.trim(), eSubtext.trim(), eCat, eStatus); editingItem = null } }, colors = ButtonDefaults.buttonColors(containerColor = BrandAccent), modifier = Modifier.weight(1f)) { Text("Save") }
-                        Button(onClick = { editingItem = null }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray), modifier = Modifier.weight(1f)) { Text("Cancel") }
+                        Button(onClick = { editingItem = null }, colors = ButtonDefaults.buttonColors(containerColor = MutedText), modifier = Modifier.weight(1f)) { Text("Cancel") }
                     }
                 }
             }
@@ -2379,25 +2387,25 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
         var eLang by remember(word.id) { mutableStateOf(word.category) }
         Dialog(onDismissRequest = { editingWord = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Edit Word", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    OutlinedTextField(value = eWord, onValueChange = { eWord = it }, placeholder = { Text("Word", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)), modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = eMeaning, onValueChange = { eMeaning = it }, placeholder = { Text("English meaning", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF2A2A2A), unfocusedContainerColor = Color(0xFF1E1E1E)), modifier = Modifier.fillMaxWidth())
+                    Text("Edit Word", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
+                    OutlinedTextField(value = eWord, onValueChange = { eWord = it }, placeholder = { Text("Word", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard), modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = eMeaning, onValueChange = { eMeaning = it }, placeholder = { Text("English meaning", color = MutedText) }, colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard), modifier = Modifier.fillMaxWidth())
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         listOf("ARABIC", "JAPANESE", "ENGLISH").forEach { lang ->
-                            Box(modifier = Modifier.weight(1f).background(if (eLang == lang) InstaGradient else Brush.linearGradient(listOf(Color(0xFF2A2A2A), Color(0xFF2A2A2A))), shape = RoundedCornerShape(8.dp)).clickable { eLang = lang }.padding(8.dp), contentAlignment = Alignment.Center) {
-                                Text(lang, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                            Box(modifier = Modifier.weight(1f).background(if (eLang == lang) InstaGradient else Brush.linearGradient(listOf(ChipBg, ChipBg)), shape = RoundedCornerShape(8.dp)).clickable { eLang = lang }.padding(8.dp), contentAlignment = Alignment.Center) {
+                                Text(lang, color = PrimaryText, fontSize = 9.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(onClick = { if (eWord.isNotBlank() && eMeaning.isNotBlank()) { viewModel.editWord(word, eWord.trim(), eMeaning.trim(), eLang); editingWord = null } }, colors = ButtonDefaults.buttonColors(containerColor = BrandAccent), modifier = Modifier.weight(1f)) { Text("Save") }
-                        Button(onClick = { editingWord = null }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray), modifier = Modifier.weight(1f)) { Text("Cancel") }
+                        Button(onClick = { editingWord = null }, colors = ButtonDefaults.buttonColors(containerColor = MutedText), modifier = Modifier.weight(1f)) { Text("Cancel") }
                     }
                 }
             }
@@ -2448,7 +2456,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
         item {
             Text(
                 text = "Sleep Routine Calculator",
-                color = Color.White,
+                color = PrimaryText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -2493,7 +2501,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                         Text("MY TARGET", color = MutedText, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                         Text(
                             text = "7.0 hrs",
-                            color = Color.White,
+                            color = PrimaryText,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black
                         )
@@ -2535,7 +2543,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("Slept Last Evening", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("Slept Last Evening", color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -2546,10 +2554,10 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                             onValueChange = { sleptHour = it },
                             label = { Text("Slept At (e.g. 01:00)", fontSize = 10.sp) },
                             colors = TextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedContainerColor = Color(0xFF222222),
-                                unfocusedContainerColor = Color(0xFF1E1E1E)
+                                focusedTextColor = PrimaryText,
+                                unfocusedTextColor = PrimaryText,
+                                focusedContainerColor = ChipBg,
+                                unfocusedContainerColor = LayerCard
                             ),
                             modifier = Modifier.weight(1f)
                         )
@@ -2559,10 +2567,10 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                             onValueChange = { wakeHour = it },
                             label = { Text("Wake At (e.g. 05:30)", fontSize = 10.sp) },
                             colors = TextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedContainerColor = Color(0xFF222222),
-                                unfocusedContainerColor = Color(0xFF1E1E1E)
+                                focusedTextColor = PrimaryText,
+                                unfocusedTextColor = PrimaryText,
+                                focusedContainerColor = ChipBg,
+                                unfocusedContainerColor = LayerCard
                             ),
                             modifier = Modifier.weight(1f)
                         )
@@ -2576,7 +2584,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                         colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Log Routine Sleep", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Log Routine Sleep", color = PrimaryText, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -2584,7 +2592,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
 
         // Weekly grid (highlighting quality)
         item {
-            Text("This Week's Routine Grid (Target: 6.5h+)", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text("This Week's Routine Grid (Target: 6.5h+)", color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
 
         item {
@@ -2628,7 +2636,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                                                 listOf(Color(0xFFFD1D1D), Color(0xFFFD1D1D))
                                             )
                                         } else {
-                                            Brush.linearGradient(listOf(Color(0xFF222222), Color(0xFF222222)))
+                                            Brush.linearGradient(listOf(ChipBg, ChipBg))
                                         }
                                     )
                                     .border(1.dp, BorderHighlight, shape = RoundedCornerShape(8.dp)),
@@ -2636,7 +2644,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                             ) {
                                 Text(
                                     text = if (isComplete) "${loggedObj!!.hoursSlept}h" else "-",
-                                    color = Color.White,
+                                    color = PrimaryText,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -2653,7 +2661,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Sleep Schedule Logs", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("Sleep Schedule Logs", color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -2670,7 +2678,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(logEntry.dateString, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(logEntry.dateString, color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         Text(
                             "Bed: ${logEntry.sleptAt} • Wake: ${logEntry.wokeUp}",
                             color = MutedText,
@@ -2689,7 +2697,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                         )
 
                         IconButton(onClick = { editingSleep = logEntry }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray.copy(0.6f))
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MutedText.copy(0.6f))
                         }
                         IconButton(onClick = { viewModel.deleteSleepLog(logEntry.dateString) }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(0.6f))
@@ -2707,24 +2715,24 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
         var eWake by remember(log.id) { mutableStateOf(log.wokeUp) }
         Dialog(onDismissRequest = { editingSleep = null }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Edit Sleep Log (${log.dateString})", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Edit Sleep Log (${log.dateString})", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = PrimaryText)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = eSlept, onValueChange = { eSlept = it },
                             label = { Text("Slept At (HH:MM)", fontSize = 10.sp) },
-                            colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)),
+                            colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard),
                             modifier = Modifier.weight(1f)
                         )
                         OutlinedTextField(
                             value = eWake, onValueChange = { eWake = it },
                             label = { Text("Wake At (HH:MM)", fontSize = 10.sp) },
-                            colors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)),
+                            colors = TextFieldDefaults.colors(focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText, focusedContainerColor = ChipBg, unfocusedContainerColor = LayerCard),
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -2737,8 +2745,8 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent), modifier = Modifier.weight(1f)
-                        ) { Text("Save", color = Color.White) }
-                        Button(onClick = { editingSleep = null }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray), modifier = Modifier.weight(1f)) { Text("Cancel", color = Color.White) }
+                        ) { Text("Save", color = PrimaryText) }
+                        Button(onClick = { editingSleep = null }, colors = ButtonDefaults.buttonColors(containerColor = MutedText), modifier = Modifier.weight(1f)) { Text("Cancel", color = PrimaryText) }
                     }
                 }
             }
@@ -2943,11 +2951,11 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                     Spacer(Modifier.height(16.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("XP", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(22.dp))
-                        Box(modifier = Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(100)).background(Color.White.copy(alpha = 0.1f))) {
+                        Box(modifier = Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(100)).background(PrimaryText.copy(alpha = 0.1f))) {
                             val animXP by animateFloatAsState(xpProgress, tween(1000, easing = FastOutSlowInEasing), label = "xp")
                             Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(animXP).clip(RoundedCornerShape(100)).background(Brush.horizontalGradient(listOf(InstaPurple, BrandAccent, InstaOrange))))
                         }
-                        Text("${(xpProgress * 100).toInt()}%", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(start = 8.dp).width(36.dp))
+                        Text("${(xpProgress * 100).toInt()}%", color = PrimaryText, fontSize = 10.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(start = 8.dp).width(36.dp))
                     }
                     Spacer(Modifier.height(4.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -2957,7 +2965,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
 
                     Spacer(Modifier.height(16.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF141414)).padding(vertical = 12.dp),
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(LayerCard).padding(vertical = 12.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         HeroStat("👑", "$level", "LEVEL")
@@ -3009,7 +3017,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
             Spacer(Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 RpgSectionLabel("DAILY QUESTS")
-                Text("$questsDoneCount/${quests.size} done", color = if (questsDoneCount == quests.size) Color(0xFF66BB6A) else MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text("$questsDoneCount/${quests.size} done", color = if (questsDoneCount == quests.size) PositiveGreen else MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.height(8.dp))
             Card(
@@ -3118,7 +3126,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
 
             Column(modifier = Modifier.padding(horizontal = 12.dp)) {
                 Spacer(Modifier.height(8.dp))
-                HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                HorizontalDivider(color = PrimaryText.copy(alpha = 0.08f))
                 Spacer(Modifier.height(16.dp))
                 Text(
                     "FINANCE THIS MONTH",
@@ -3148,7 +3156,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                                 Text("Spent", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     String.format("DH %,.0f", monthExpense),
-                                    color = Color(0xFFEF5350),
+                                    color = NegativeRed,
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Black
                                 )
@@ -3157,7 +3165,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                                 Text("Saved", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                 Text(
                                     String.format("DH %,.0f", monthSaved.coerceAtLeast(0.0)),
-                                    color = Color(0xFF66BB6A),
+                                    color = PositiveGreen,
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Black
                                 )
@@ -3169,7 +3177,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                                 Text("Savings rate", color = MutedText, fontSize = 10.sp)
                                 Text(
                                     "${savingsRate.toInt()}% of income saved",
-                                    color = if (savingsRate >= 20) Color(0xFF66BB6A) else Color(0xFFFFAB40),
+                                    color = if (savingsRate >= 20) PositiveGreen else Color(0xFFFFAB40),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -3177,7 +3185,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                             Box(
                                 modifier = Modifier.fillMaxWidth().height(7.dp)
                                     .clip(RoundedCornerShape(100))
-                                    .background(Color.White.copy(alpha = 0.08f))
+                                    .background(PrimaryText.copy(alpha = 0.08f))
                             ) {
                                 val animRate by animateFloatAsState(
                                     targetValue = (savingsRate / 100f).toFloat().coerceIn(0f, 1f),
@@ -3190,7 +3198,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                                         .clip(RoundedCornerShape(100))
                                         .background(
                                             Brush.horizontalGradient(
-                                                listOf(Color(0xFF29B6F6), Color(0xFF66BB6A))
+                                                listOf(Color(0xFF29B6F6), PositiveGreen)
                                             )
                                         )
                                 )
@@ -3229,7 +3237,7 @@ fun ProfileStatNode(label: String, score: Int, accentLight: Color, accentDark: C
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .width(82.dp)
-            .background(Color.White.copy(alpha = 0.06f), RoundedCornerShape(14.dp))
+            .background(PrimaryText.copy(alpha = 0.06f), RoundedCornerShape(14.dp))
             .border(1.dp, accentLight.copy(alpha = 0.28f), RoundedCornerShape(14.dp))
             .padding(horizontal = 6.dp, vertical = 10.dp)
     ) {
@@ -3244,7 +3252,7 @@ fun ProfileStatNode(label: String, score: Int, accentLight: Color, accentDark: C
             Text(animScore.toInt().toString(), color = accentLight, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
         }
         Spacer(Modifier.height(5.dp))
-        Text(label, color = Color.White.copy(alpha = 0.82f), fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, maxLines = 1)
+        Text(label, color = PrimaryText.copy(alpha = 0.82f), fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, maxLines = 1)
     }
 }
 
@@ -3256,7 +3264,7 @@ fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, userName: S
             modifier = Modifier
                 .size(96.dp)
                 .clip(CircleShape)
-                .background(Brush.radialGradient(listOf(InstaPurple.copy(alpha = 0.6f), Color(0xFF1A1A1A))))
+                .background(Brush.radialGradient(listOf(InstaPurple.copy(alpha = 0.6f), LayerCard)))
                 .border(
                     BorderStroke(2.5.dp, Brush.sweepGradient(listOf(InstaPurple, BrandAccent, InstaOrange, InstaPurple))),
                     CircleShape
@@ -3276,13 +3284,13 @@ fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, userName: S
                     Spacer(Modifier.height(2.dp))
                     Text(
                         userName.trim().take(1).uppercase(),
-                        color = Color.White,
+                        color = PrimaryText,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Black
                     )
                     Text(
                         "Add Photo",
-                        color = Color.White.copy(alpha = 0.45f),
+                        color = PrimaryText.copy(alpha = 0.45f),
                         fontSize = 7.sp,
                         letterSpacing = 0.5.sp
                     )
@@ -3295,7 +3303,7 @@ fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, userName: S
                 .size(26.dp)
                 .background(Brush.linearGradient(listOf(InstaPurple, BrandAccent)), CircleShape)
         ) {
-            Text("$level", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+            Text("$level", color = PrimaryText, fontSize = 9.sp, fontWeight = FontWeight.Black)
         }
     }
 }
@@ -3304,13 +3312,13 @@ fun ProfileAvatar(photoBitmap: android.graphics.Bitmap?, level: Int, userName: S
 fun RpgStatCard(title: String, value: String, accent: Color, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+            .background(PrimaryText.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
             .border(1.dp, accent.copy(alpha = 0.22f), RoundedCornerShape(12.dp))
             .padding(14.dp)
     ) {
         Text(title, color = MutedText, fontSize = 10.sp)
         Spacer(Modifier.height(4.dp))
-        Text(value, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(value, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -3377,7 +3385,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Weekly Review", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("Weekly Review", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Black)
                     Text(weekDateRange, color = MutedText, fontSize = 11.sp)
                 }
                 Box(
@@ -3410,7 +3418,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("😴", fontSize = 22.sp)
-                        Text(String.format("%.1f h", avgSleepWeek), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text(String.format("%.1f h", avgSleepWeek), color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
                         Text("Avg sleep", color = MutedText, fontSize = 9.sp)
                     }
                 }
@@ -3422,7 +3430,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("✅", fontSize = 22.sp)
-                        Text("$habitsDone / $habitsTotal", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("$habitsDone / $habitsTotal", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
                         Text("Habits today", color = MutedText, fontSize = 9.sp)
                     }
                 }
@@ -3434,7 +3442,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("🎯", fontSize = 22.sp)
-                        Text("$actionsThisWeek", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("$actionsThisWeek", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
                         Text("Goal actions", color = MutedText, fontSize = 9.sp)
                     }
                 }
@@ -3485,7 +3493,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("✍️  Weekly Reflection", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                    Text("✍️  Weekly Reflection", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
 
                     Text("How was your week?", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     OutlinedTextField(
@@ -3493,10 +3501,10 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                         onValueChange = { textReflection = it },
                         placeholder = { Text("What went well? What could be better? How do you feel?", color = MutedText, fontSize = 12.sp) },
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF222222),
-                            unfocusedContainerColor = Color(0xFF1E1E1E)
+                            focusedTextColor = PrimaryText,
+                            unfocusedTextColor = PrimaryText,
+                            focusedContainerColor = ChipBg,
+                            unfocusedContainerColor = LayerCard
                         ),
                         modifier = Modifier.fillMaxWidth().height(120.dp)
                     )
@@ -3507,10 +3515,10 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                         onValueChange = { textIntention = it },
                         placeholder = { Text("What will you focus on? Be specific.", color = MutedText, fontSize = 12.sp) },
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF222222),
-                            unfocusedContainerColor = Color(0xFF1E1E1E)
+                            focusedTextColor = PrimaryText,
+                            unfocusedTextColor = PrimaryText,
+                            focusedContainerColor = ChipBg,
+                            unfocusedContainerColor = LayerCard
                         ),
                         modifier = Modifier.fillMaxWidth().height(90.dp)
                     )
@@ -3522,7 +3530,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                         colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Save Reflections", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Save Reflections", color = PrimaryText, fontWeight = FontWeight.Bold)
                     }
                 }
             }

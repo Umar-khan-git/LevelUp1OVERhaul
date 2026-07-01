@@ -23,7 +23,7 @@ import com.example.data.MoneyAccountEntity
 import com.example.data.TransactionEntity
 import com.example.ui.theme.*
 
-private val SearchAccent = Color(0xFFFD5A4E)
+private val SearchAccent = Accent
 
 // ============================================
 // SEARCH / FILTER OVERLAY
@@ -58,12 +58,12 @@ fun FinanceSearchScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             // Search bar
             Row(
-                modifier = Modifier.fillMaxWidth().background(Color(0xFF141414))
+                modifier = Modifier.fillMaxWidth().background(LayerCard)
                     .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Close search", tint = Color.White)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Close search", tint = PrimaryText)
                 }
                 TextField(
                     value = query,
@@ -73,8 +73,8 @@ fun FinanceSearchScreen(
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = PrimaryText,
                         cursorColor = SearchAccent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
@@ -97,10 +97,10 @@ fun FinanceSearchScreen(
                     val sel = typeFilter == t
                     Surface(
                         modifier = Modifier.weight(1f).clickable { typeFilter = t },
-                        color = if (sel) SearchAccent else Color(0xFF222222),
+                        color = if (sel) SearchAccent else ChipBg,
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(lbl, color = if (sel) Color.White else MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        Text(lbl, color = if (sel) PrimaryText else MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
                     }
@@ -167,7 +167,7 @@ private fun FilterDropdown(label: String, options: List<String>, onSelect: (Stri
     Box {
         Surface(
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
-            color = Color(0xFF222222),
+            color = ChipBg,
             shape = RoundedCornerShape(8.dp),
             border = BorderStroke(1.dp, BorderHighlight)
         ) {
@@ -176,7 +176,7 @@ private fun FilterDropdown(label: String, options: List<String>, onSelect: (Stri
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(label, color = Color.White, fontSize = 12.sp, maxLines = 1)
+                Text(label, color = PrimaryText, fontSize = 12.sp, maxLines = 1)
                 Text("▾", color = MutedText, fontSize = 11.sp)
             }
         }

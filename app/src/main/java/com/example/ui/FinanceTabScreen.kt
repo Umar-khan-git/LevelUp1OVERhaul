@@ -45,7 +45,7 @@ import kotlin.math.sin
 // Theme helper colors
 val BlueIncome = Color(0xFF29B6F6)
 val RedExpense = Color(0xFFEF5350)
-val DarkGreyBg = Color(0xFF111111)
+val DarkGreyBg = CanvasBg
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -177,7 +177,7 @@ fun FinanceSubNavBar(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth().height(60.dp),
-        color = Color(0xFF141414),
+        color = LayerCard,
         border = BorderStroke(1.dp, BorderHighlight)
     ) {
         Row(
@@ -321,7 +321,7 @@ fun FinanceSubTabItem(
     onClick: () -> Unit,
     iconPainter: @Composable (Color) -> Unit
 ) {
-    val activeColor = remember { Color(0xFFFD5A4E) } // Peach-Red accent matching Screenshot colors
+    val activeColor = remember { Accent } // Peach-Red accent matching Screenshot colors
     val tint = if (isSelected) activeColor else MutedText
 
     Column(
@@ -365,13 +365,13 @@ fun TransactionsSubScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF141414))
+                .background(LayerCard)
                 .border(BorderStroke(1.dp, BorderHighlight))
                 .padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             listOf("daily" to "Daily", "calendar" to "Calendar", "monthly" to "Monthly").forEach { (tabId, label) ->
-                val activeColors = remember { Color(0xFFFD5A4E) }
+                val activeColors = remember { Accent }
                 val isSel = transCategoryTab == tabId
                 Column(
                     modifier = Modifier
@@ -382,7 +382,7 @@ fun TransactionsSubScreen(
                 ) {
                     Text(
                         text = label,
-                        color = if (isSel) Color.White else MutedText,
+                        color = if (isSel) PrimaryText else MutedText,
                         fontSize = 13.sp,
                         fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
                     )
@@ -403,7 +403,7 @@ fun TransactionsSubScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF141414))
+                .background(LayerCard)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -416,11 +416,11 @@ fun TransactionsSubScreen(
                     onClick = { onMonthKeyChange(getPreviousMonthKey(selectedMonthKey)) },
                     modifier = Modifier.size(44.dp)
                 ) {
-                    Text("◀", color = Color.White, fontSize = 16.sp)
+                    Text("◀", color = PrimaryText, fontSize = 16.sp)
                 }
                 Text(
                     text = formatYearMonth(selectedMonthKey), 
-                    color = Color.White, 
+                    color = PrimaryText, 
                     fontSize = 15.sp, 
                     fontWeight = FontWeight.Bold
                 )
@@ -428,7 +428,7 @@ fun TransactionsSubScreen(
                     onClick = { onMonthKeyChange(getNextMonthKey(selectedMonthKey)) },
                     modifier = Modifier.size(44.dp)
                 ) {
-                    Text("▶", color = Color.White, fontSize = 16.sp)
+                    Text("▶", color = PrimaryText, fontSize = 16.sp)
                 }
             }
             Row(
@@ -436,12 +436,12 @@ fun TransactionsSubScreen(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .clickable { onSearchClick() }
-                    .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(20.dp))
+                    .background(LayerCard, shape = RoundedCornerShape(20.dp))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
                     .testTag("finance_search_btn")
             ) {
-                Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFFFD5A4E), modifier = Modifier.size(16.dp))
-                Text("Search", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Icon(Icons.Default.Search, contentDescription = "Search", tint = Accent, modifier = Modifier.size(16.dp))
+                Text("Search", color = PrimaryText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -457,7 +457,7 @@ fun TransactionsSubScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF1A1A1A))
+                .background(LayerCard)
                 .border(BorderStroke(1.dp, BorderHighlight))
                 .padding(vertical = 10.dp, horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -473,7 +473,7 @@ fun TransactionsSubScreen(
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Total", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Text(String.format("DH %,.2f", currentBalance), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(String.format("DH %,.2f", currentBalance), color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -511,7 +511,7 @@ fun TransactionsSubScreen(
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(Color(0xFF0F0F0F))
+                                            .background(CanvasBg)
                                             .padding(horizontal = 16.dp, vertical = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
@@ -524,12 +524,12 @@ fun TransactionsSubScreen(
                                                 text = dayNum,
                                                 fontSize = 24.sp,
                                                 fontWeight = FontWeight.Black,
-                                                color = Color.White
+                                                color = PrimaryText
                                             )
                                             Column {
                                                 Text(
                                                     text = weekday.uppercase(),
-                                                    color = Color.White,
+                                                    color = PrimaryText,
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold
                                                 )
@@ -588,8 +588,8 @@ fun TransactionsSubScreen(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(start = 16.dp, end = 16.dp, bottom = 72.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0D0D2B)),
-                    border = BorderStroke(1.dp, Color(0xFF7B2FBE).copy(alpha = 0.5f)),
+                    colors = CardDefaults.cardColors(containerColor = LayerCard),
+                    border = BorderStroke(1.dp, Accent.copy(alpha = 0.5f)),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
@@ -598,14 +598,14 @@ fun TransactionsSubScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "Tap the red + button to log a transaction. Choose Income, Expense or Transfer, enter amount, category and account.",
-                            color = Color.White, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.weight(1f)
+                            color = PrimaryText, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         TextButton(onClick = {
                             _guidePrefsMoney.edit().putBoolean("guide_money", true).apply()
                             showGuideMoney = false
                         }) {
-                            Text("Got it", color = Color(0xFF7B2FBE), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Got it", color = Accent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                 }
@@ -613,8 +613,8 @@ fun TransactionsSubScreen(
             // High Fidelity Floating Action Button matching Screenshot Red/Orange theme color
             FloatingActionButton(
                 onClick = onAddTxClick,
-                containerColor = Color(0xFFFD5A4E),
-                contentColor = Color.White,
+                containerColor = Accent,
+                contentColor = PrimaryText,
                 shape = RoundedCornerShape(100),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -661,7 +661,7 @@ fun TransactionRowItem(
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .background(Color(0xFF222222), shape = RoundedCornerShape(100)),
+                    .background(ChipBg, shape = RoundedCornerShape(100)),
                 contentAlignment = Alignment.Center
             ) {
                 val emojiSymbol = when (tx.category.trim().lowercase()) {
@@ -680,7 +680,7 @@ fun TransactionRowItem(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = tx.category,
-                        color = Color.White,
+                        color = PrimaryText,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -692,7 +692,7 @@ fun TransactionRowItem(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
-                            .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(4.dp))
+                            .background(LayerCard, shape = RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
@@ -713,7 +713,7 @@ fun TransactionRowItem(
                         tx.tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }.take(4).forEach { tag ->
                             Text(
                                 text = "#$tag",
-                                color = Color(0xFFFD5A4E),
+                                color = Accent,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
@@ -745,8 +745,8 @@ fun TransactionRowItem(
     if (showDeleteAlert) {
         AlertDialog(
             onDismissRequest = { showDeleteAlert = false },
-            title = { Text("Delete Transaction?", color = Color.White) },
-            text = { Text("Are you sure you want to delete this ${tx.category} record?", color = Color.Gray) },
+            title = { Text("Delete Transaction?", color = PrimaryText) },
+            text = { Text("Are you sure you want to delete this ${tx.category} record?", color = MutedText) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -759,10 +759,10 @@ fun TransactionRowItem(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteAlert = false }) {
-                    Text("Cancel", color = Color.White)
+                    Text("Cancel", color = PrimaryText)
                 }
             },
-            containerColor = Color(0xFF1E1E1E)
+            containerColor = LayerCard
         )
     }
 }
@@ -795,7 +795,7 @@ fun EditTransactionDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF1A1A1A),
+            color = LayerCard,
             border = BorderStroke(1.dp, BorderHighlight),
             modifier = Modifier.padding(16.dp)
         ) {
@@ -805,7 +805,7 @@ fun EditTransactionDialog(
             ) {
                 Text(
                     text = "Edit Transaction",
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -839,8 +839,8 @@ fun EditTransactionDialog(
                 ) {
                     Text("Date", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(dateLabel, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Icon(Icons.Default.DateRange, contentDescription = "Pick date", tint = Color(0xFFFD5A4E), modifier = Modifier.size(18.dp))
+                        Text(dateLabel, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date", tint = Accent, modifier = Modifier.size(18.dp))
                     }
                 }
 
@@ -849,10 +849,10 @@ fun EditTransactionDialog(
                     onValueChange = { amount = it },
                     label = { Text("Amount") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -862,10 +862,10 @@ fun EditTransactionDialog(
                     onValueChange = { category = it },
                     label = { Text("Category") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -875,10 +875,10 @@ fun EditTransactionDialog(
                     onValueChange = { account = it },
                     label = { Text("Account") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -888,10 +888,10 @@ fun EditTransactionDialog(
                     onValueChange = { note = it },
                     label = { Text("Note") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -901,10 +901,10 @@ fun EditTransactionDialog(
                     onValueChange = { tags = it },
                     label = { Text("Tags (comma-separated)") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -915,7 +915,7 @@ fun EditTransactionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel", color = Color.White)
+                        Text("Cancel", color = PrimaryText)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -935,9 +935,9 @@ fun EditTransactionDialog(
                                 )
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFD5A4E))
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent)
                     ) {
-                        Text("Save", color = Color.White)
+                        Text("Save", color = PrimaryText)
                     }
                 }
             }
@@ -1039,8 +1039,8 @@ fun CalendarViewScreen(
                     Box(
                         modifier = Modifier
                             .aspectRatio(0.8f)
-                            .border(BorderStroke(0.5.dp, Color(0x33FFFFFF)))
-                            .background(if (isTodayInContext) Color(0xFF222222) else Color.Transparent)
+                            .border(BorderStroke(0.5.dp, DividerColor))
+                            .background(if (isTodayInContext) ChipBg else Color.Transparent)
                             .padding(2.dp)
                     ) {
                         Column(
@@ -1049,7 +1049,7 @@ fun CalendarViewScreen(
                         ) {
                             Text(
                                 text = day,
-                                color = if (isTodayInContext) Color.White else MutedText,
+                                color = if (isTodayInContext) PrimaryText else MutedText,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(2.dp)
@@ -1149,7 +1149,7 @@ fun MonthlySummaryView(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("${formatYearMonth(selectedMonthKey)} Summary", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text("${formatYearMonth(selectedMonthKey)} Summary", color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Income", color = MutedText, fontSize = 12.sp)
@@ -1161,15 +1161,15 @@ fun MonthlySummaryView(
                     }
                     HorizontalDivider(color = BorderHighlight, modifier = Modifier.padding(vertical = 8.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Savings", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        Text(String.format("DH %,.2f", filterMayIncome - filterMayExpense), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text("Savings", color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(String.format("DH %,.2f", filterMayIncome - filterMayExpense), color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
 
         item {
-            Text("Weekly Breakdowns", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 4.dp))
+            Text("Weekly Breakdowns", color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 4.dp))
         }
 
         items(dynamicWeeks) { (weekRange, inc, exp) ->
@@ -1182,7 +1182,7 @@ fun MonthlySummaryView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(weekRange, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(weekRange, color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(String.format("In: DH %,.0f", inc), color = BlueIncome, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Text(String.format("Out: DH %,.0f", exp), color = RedExpense, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -1220,7 +1220,7 @@ fun StatsSubScreen(
 
     // Visual Palette supporting vibrant pieces for the donut arcs
     val colorPalette = listOf(
-        Color(0xFFFD5A4E), // Coral Red
+        Accent, // Coral Red
         Color(0xFF29B6F6), // Sky Blue
         Color(0xFFFFC312), // Yellow
         Color(0xFF90FF90), // Soft Green
@@ -1250,7 +1250,7 @@ fun StatsSubScreen(
                 ) {
                     Text(
                         text = "◀",
-                        color = Color.White,
+                        color = PrimaryText,
                         fontSize = 14.sp
                     )
                 }
@@ -1258,7 +1258,7 @@ fun StatsSubScreen(
                 // Header Month Name
                 Text(
                     text = formatYearMonth(selectedMonthKey),
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1269,7 +1269,7 @@ fun StatsSubScreen(
                 ) {
                     Text(
                         text = "▶",
-                        color = Color.White,
+                        color = PrimaryText,
                         fontSize = 14.sp
                     )
                 }
@@ -1281,7 +1281,7 @@ fun StatsSubScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF161616), shape = RoundedCornerShape(8.dp))
+                    .background(ChipBg, shape = RoundedCornerShape(8.dp))
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -1302,7 +1302,7 @@ fun StatsSubScreen(
                     ) {
                         Text(
                             text = label.uppercase(Locale.getDefault()),
-                            color = if (isSel) Color.White else MutedText,
+                            color = if (isSel) PrimaryText else MutedText,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
@@ -1394,7 +1394,7 @@ fun StatsSubScreen(
 
                             // Pass 2: draw all arcs
                             mainSlices.forEachIndexed { idx, _ ->
-                                val col = colorPalette.getOrElse(idx) { Color.Gray }
+                                val col = colorPalette.getOrElse(idx) { MutedText }
                                 drawArc(
                                     color = col,
                                     startAngle = startAngles[idx],
@@ -1404,7 +1404,7 @@ fun StatsSubScreen(
                                     size = androidx.compose.ui.geometry.Size(pieRadius * 2, pieRadius * 2)
                                 )
                                 drawArc(
-                                    color = Color(0xFF111111),
+                                    color = CanvasBg,
                                     startAngle = startAngles[idx],
                                     sweepAngle = sweepAngles[idx],
                                     useCenter = true,
@@ -1450,7 +1450,7 @@ fun StatsSubScreen(
                             // Pass 3: draw leader lines + labels
                             val rightAnchorX = centerX + pieRadius + 28f
                             rightIdx.forEachIndexed { i, idx ->
-                                val col = colorPalette.getOrElse(idx) { Color.Gray }
+                                val col = colorPalette.getOrElse(idx) { MutedText }
                                 val labelY = rightYs[i]
                                 val edgeX = centerX + pieRadius * cos(midRads[idx]).toFloat()
                                 val edgeY = centerY + pieRadius * sin(midRads[idx]).toFloat()
@@ -1477,7 +1477,7 @@ fun StatsSubScreen(
 
                             val leftAnchorX = centerX - pieRadius - 28f
                             leftIdx.forEachIndexed { i, idx ->
-                                val col = colorPalette.getOrElse(idx) { Color.Gray }
+                                val col = colorPalette.getOrElse(idx) { MutedText }
                                 val labelY = leftYs[i]
                                 val edgeX = centerX + pieRadius * cos(midRads[idx]).toFloat()
                                 val edgeY = centerY + pieRadius * sin(midRads[idx]).toFloat()
@@ -1510,7 +1510,7 @@ fun StatsSubScreen(
             item {
                 Text(
                     text = if (statsType == "EXPENSE") "Expense Category Slices" else "Income Category Slices",
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1520,7 +1520,7 @@ fun StatsSubScreen(
             items(categoryTotals.size) { index ->
                 val (cat, amnt) = categoryTotals[index]
                 val pct = if (totalAmount > 0.0) (amnt / totalAmount) * 100.0 else 0.0
-                val activeColor = colorPalette.getOrElse(index) { Color.Gray }
+                val activeColor = colorPalette.getOrElse(index) { MutedText }
 
                 Row(
                     modifier = Modifier
@@ -1554,7 +1554,7 @@ fun StatsSubScreen(
 
                         Text(
                             text = cat,
-                            color = Color.White,
+                            color = PrimaryText,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -1562,7 +1562,7 @@ fun StatsSubScreen(
 
                     Text(
                         text = String.format("DH %,.2f", amnt),
-                        color = Color.White,
+                        color = PrimaryText,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -1657,7 +1657,7 @@ fun AccountsSubScreen(
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Total", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        Text(String.format("%,.2f", netWorth), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        Text(String.format("%,.2f", netWorth), color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1735,15 +1735,15 @@ fun AccountsSubScreen(
         item {
             Button(
                 onClick = { showAddAccountDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF222222)),
+                colors = ButtonDefaults.buttonColors(containerColor = ChipBg),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Account", tint = Color.White, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Add, contentDescription = "Add Account", tint = PrimaryText, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Add New Account", color = Color.White, fontSize = 13.sp)
+                Text("Add New Account", color = PrimaryText, fontSize = 13.sp)
             }
         }
     }
@@ -1780,7 +1780,7 @@ fun AccountItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(acc.name, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(acc.name, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Text(acc.type, color = MutedText, fontSize = 10.sp)
         }
         Text(
@@ -1802,8 +1802,8 @@ fun AccountItemRow(
     if (showDelete) {
         AlertDialog(
             onDismissRequest = { showDelete = false },
-            title = { Text("Delete Account?", color = Color.White) },
-            text = { Text("Remove \"${acc.name}\" from your accounts list?", color = Color.Gray) },
+            title = { Text("Delete Account?", color = PrimaryText) },
+            text = { Text("Remove \"${acc.name}\" from your accounts list?", color = MutedText) },
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDelete = false }) {
                     Text("Delete", color = Color.Red)
@@ -1811,10 +1811,10 @@ fun AccountItemRow(
             },
             dismissButton = {
                 TextButton(onClick = { showDelete = false }) {
-                    Text("Cancel", color = Color.White)
+                    Text("Cancel", color = PrimaryText)
                 }
             },
-            containerColor = Color(0xFF1A1A1A)
+            containerColor = LayerCard
         )
     }
 }
@@ -1844,17 +1844,17 @@ fun EditAccountDialog(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Edit Account", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Edit Account", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
                 TextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Account Name") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1865,12 +1865,12 @@ fun EditAccountDialog(
                         Button(
                             onClick = { selectedType = typeVal },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isSel) Color(0xFFFD5A4E) else Color(0xFF222222)
+                                containerColor = if (isSel) Accent else ChipBg
                             ),
                             modifier = Modifier.weight(1f),
                             contentPadding = PaddingValues(vertical = 4.dp)
                         ) {
-                            Text(label, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(label, color = PrimaryText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1880,10 +1880,10 @@ fun EditAccountDialog(
                     onValueChange = { balanceStr = it },
                     label = { Text("Balance") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1894,7 +1894,7 @@ fun EditAccountDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel", color = Color.White)
+                        Text("Cancel", color = PrimaryText)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -1904,9 +1904,9 @@ fun EditAccountDialog(
                                 onSave(acc.copy(name = name.trim(), type = selectedType, balance = bal))
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFD5A4E))
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent)
                     ) {
-                        Text("Save", color = Color.White)
+                        Text("Save", color = PrimaryText)
                     }
                 }
             }
@@ -1938,17 +1938,17 @@ fun AddAccountDialog(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Add New Account", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Add New Account", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
                 TextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Account Name") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.Gray,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = MutedText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1959,12 +1959,12 @@ fun AddAccountDialog(
                         Button(
                             onClick = { selectedType = typeVal },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isSel) Color(0xFFFD5A4E) else Color(0xFF222222)
+                                containerColor = if (isSel) Accent else ChipBg
                             ),
                             modifier = Modifier.weight(1f),
                             contentPadding = PaddingValues(vertical = 4.dp)
                         ) {
-                            Text(label, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(label, color = PrimaryText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1974,9 +1974,9 @@ fun AddAccountDialog(
                     onValueChange = { balanceStr = it },
                     label = { Text("Initial Balance") },
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        focusedContainerColor = Color(0xFF222222),
-                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                        focusedTextColor = PrimaryText,
+                        focusedContainerColor = ChipBg,
+                        unfocusedContainerColor = LayerCard
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1987,7 +1987,7 @@ fun AddAccountDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel", color = Color.White)
+                        Text("Cancel", color = PrimaryText)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -1997,9 +1997,9 @@ fun AddAccountDialog(
                                 onAdd(name, selectedType, bal)
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFD5A4E))
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent)
                     ) {
-                        Text("Add", color = Color.White)
+                        Text("Add", color = PrimaryText)
                     }
                 }
             }
@@ -2053,11 +2053,11 @@ fun TotalSubScreen(
                         onClick = { onMonthKeyChange(getPreviousMonthKey(selectedMonthKey)) },
                         modifier = Modifier.size(44.dp)
                     ) {
-                        Text("◀", color = Color.White, fontSize = 16.sp)
+                        Text("◀", color = PrimaryText, fontSize = 16.sp)
                     }
                     Text(
                         text = formatYearMonth(selectedMonthKey), 
-                        color = Color.White, 
+                        color = PrimaryText, 
                         fontSize = 16.sp, 
                         fontWeight = FontWeight.Bold
                     )
@@ -2065,7 +2065,7 @@ fun TotalSubScreen(
                         onClick = { onMonthKeyChange(getNextMonthKey(selectedMonthKey)) },
                         modifier = Modifier.size(44.dp)
                     ) {
-                        Text("▶", color = Color.White, fontSize = 16.sp)
+                        Text("▶", color = PrimaryText, fontSize = 16.sp)
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -2098,7 +2098,7 @@ fun TotalSubScreen(
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Total", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        Text(String.format("%,.2f", totalValue), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(String.format("%,.2f", totalValue), color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -2123,9 +2123,9 @@ fun TotalSubScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Check, contentDescription = "Budget", tint = if (totalExpense > monthlyBudget) Color(0xFFEF5350) else Color(0xFFFD5A4E), modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Check, contentDescription = "Budget", tint = if (totalExpense > monthlyBudget) Color(0xFFEF5350) else Accent, modifier = Modifier.size(18.dp))
                         Column {
-                            Text("Budget", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("Budget", color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 text = String.format("Spent: DH %,.2f / DH %,.2f (%s)", totalExpense, monthlyBudget.toDouble(), budgetStatus),
                                 color = if (totalExpense > monthlyBudget) Color(0xFFEF5350) else MutedText,
@@ -2199,7 +2199,7 @@ fun TotalSubScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Icon(Icons.Default.Menu, contentDescription = "Accounts Overview", tint = BlueIncome, modifier = Modifier.size(18.dp))
-                            Text("Accounts", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("Accounts", color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                         Text(
                             text = String.format("01.%s.%s ~ %02d.%s", monthPart, yearPart, daysInMonth, monthPart),
@@ -2211,19 +2211,19 @@ fun TotalSubScreen(
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Compared Expenses (Last month)", color = MutedText, fontSize = 12.sp)
-                        Text(comparedPercentStr, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(comparedPercentStr, color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Expenses (Cash, Accounts)", color = MutedText, fontSize = 12.sp)
-                        Text(String.format("DH %,.2f", cashExpenses), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(String.format("DH %,.2f", cashExpenses), color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Expenses (Card)", color = MutedText, fontSize = 12.sp)
-                        Text(String.format("DH %,.2f", cardExpenses2), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(String.format("DH %,.2f", cardExpenses2), color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Transfer (Cash, Accounts → ... )", color = MutedText, fontSize = 12.sp)
-                        Text(String.format("DH %,.2f", transferTotal), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(String.format("DH %,.2f", transferTotal), color = PrimaryText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -2237,13 +2237,13 @@ fun TotalSubScreen(
                     ToastHelper.showToast(context, "Exporting finance data to Excel...")
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                border = BorderStroke(1.dp, Color(0xFF4CAF50)),
+                border = BorderStroke(1.dp, PositiveGreen),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Icon(Icons.Default.Share, contentDescription = "Excel icon", tint = Color(0xFF4CAF50), modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Share, contentDescription = "Excel icon", tint = PositiveGreen, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Export data to Excel", color = Color(0xFF4CAF50), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("Export data to Excel", color = PositiveGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -2252,7 +2252,7 @@ fun TotalSubScreen(
         var budgetText by remember { mutableStateOf(if (monthlyBudget > 0) monthlyBudget.toInt().toString() else "") }
         AlertDialog(
             onDismissRequest = { showBudgetDialog = false },
-            title = { Text("Set Monthly Budget Goal", color = Color.White) },
+            title = { Text("Set Monthly Budget Goal", color = PrimaryText) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Enter your budget limit for ${formatYearMonth(selectedMonthKey)}:", color = MutedText, fontSize = 12.sp)
@@ -2263,9 +2263,9 @@ fun TotalSubScreen(
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFFFD5A4E),
+                            focusedTextColor = PrimaryText,
+                            unfocusedTextColor = PrimaryText,
+                            focusedBorderColor = Accent,
                             unfocusedBorderColor = BorderHighlight
                         )
                     )
@@ -2281,7 +2281,7 @@ fun TotalSubScreen(
                         showBudgetDialog = false
                     }
                 ) {
-                    Text("Save", color = Color(0xFFFD5A4E))
+                    Text("Save", color = Accent)
                 }
             },
             dismissButton = {
@@ -2289,7 +2289,7 @@ fun TotalSubScreen(
                     Text("Cancel", color = MutedText)
                 }
             },
-            containerColor = Color(0xFF1E1E1E)
+            containerColor = LayerCard
         )
     }
 }
@@ -2368,7 +2368,7 @@ fun AddTransactionDialog(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xE60D0D0D)) // immersive overlay
+            .background(CanvasBg) // immersive overlay
             .clickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                 indication = null
@@ -2390,11 +2390,11 @@ fun AddTransactionDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = PrimaryText)
                 }
                 Text(
                     text = if (type == "EXPENSE") "Expense" else if (type == "INCOME") "Income" else "Transfer",
-                    color = Color.White,
+                    color = PrimaryText,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -2415,7 +2415,7 @@ fun AddTransactionDialog(
                         modifier = Modifier
                             .weight(1f)
                             .background(
-                                color = if (isSel) activeColor.copy(alpha = 0.15f) else Color(0xFF1E1E1E),
+                                color = if (isSel) activeColor.copy(alpha = 0.15f) else LayerCard,
                                 shape = RoundedCornerShape(6.dp)
                             )
                             .border(
@@ -2439,7 +2439,7 @@ fun AddTransactionDialog(
                     ) {
                         Text(
                             text = label,
-                            color = if (isSel) activeColor else Color.White,
+                            color = if (isSel) activeColor else PrimaryText,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -2476,8 +2476,8 @@ fun AddTransactionDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Date", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(80.dp))
-                    Text(dateLabel, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                    Icon(Icons.Default.DateRange, contentDescription = "Pick date", tint = Color(0xFFFD5A4E), modifier = Modifier.size(18.dp))
+                    Text(dateLabel, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Icon(Icons.Default.DateRange, contentDescription = "Pick date", tint = Accent, modifier = Modifier.size(18.dp))
                 }
 
                 HorizontalDivider(color = BorderHighlight)
@@ -2505,7 +2505,7 @@ fun AddTransactionDialog(
                             color = if (type == "EXPENSE") Color(0xFFEF5350) else BlueIncome,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Black,
-                            modifier = Modifier.border(BorderStroke(0.5.dp, Color(0x33FFFFFF))).padding(horizontal = 4.dp)
+                            modifier = Modifier.border(BorderStroke(0.5.dp, DividerColor)).padding(horizontal = 4.dp)
                         )
                     }
                 }
@@ -2523,7 +2523,7 @@ fun AddTransactionDialog(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Color(0xFF161616), shape = RoundedCornerShape(8.dp))
+                                    .background(ChipBg, shape = RoundedCornerShape(8.dp))
                                     .clickable {
                                         numpadVisible = false // free up space so the list is visible
                                         showCategoryMenu = true
@@ -2534,7 +2534,7 @@ fun AddTransactionDialog(
                             ) {
                                 Text(
                                     text = selectedCategory.ifEmpty { "Select category" },
-                                    color = if (selectedCategory.isEmpty()) MutedText else Color.White,
+                                    color = if (selectedCategory.isEmpty()) MutedText else PrimaryText,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -2543,7 +2543,7 @@ fun AddTransactionDialog(
                             DropdownMenu(
                                 expanded = showCategoryMenu,
                                 onDismissRequest = { showCategoryMenu = false },
-                                modifier = Modifier.background(Color(0xFF1E1E1E)).heightIn(max = 320.dp)
+                                modifier = Modifier.background(LayerCard).heightIn(max = 320.dp)
                             ) {
                                 activeCats.forEach { cat ->
                                     val isSel = selectedCategory == cat
@@ -2551,7 +2551,7 @@ fun AddTransactionDialog(
                                         text = {
                                             Text(
                                                 cat,
-                                                color = if (isSel) Color(0xFFFD5A4E) else Color.White,
+                                                color = if (isSel) Accent else PrimaryText,
                                                 fontSize = 14.sp,
                                                 fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
                                             )
@@ -2563,9 +2563,9 @@ fun AddTransactionDialog(
                                 DropdownMenuItem(
                                     text = {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Add, contentDescription = "Add", tint = Color(0xFFFD5A4E), modifier = Modifier.size(14.dp))
+                                            Icon(Icons.Default.Add, contentDescription = "Add", tint = Accent, modifier = Modifier.size(14.dp))
                                             Spacer(modifier = Modifier.width(6.dp))
-                                            Text("Add category", color = Color(0xFFFD5A4E), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                            Text("Add category", color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                         }
                                     },
                                     onClick = { showCategoryMenu = false; showAddCategoryDialog = true }
@@ -2593,12 +2593,12 @@ fun AddTransactionDialog(
                             val isSel = selectedAccount == acc.name
                             Text(
                                 text = acc.name,
-                                color = if (isSel) Color.White else MutedText,
+                                color = if (isSel) PrimaryText else MutedText,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .background(
-                                        color = if (isSel) Color(0xFF2196F3) else Color(0xFF161616),
+                                        color = if (isSel) Color(0xFF2196F3) else ChipBg,
                                         shape = RoundedCornerShape(6.dp)
                                     )
                                     .clickable { selectedAccount = acc.name }
@@ -2609,7 +2609,7 @@ fun AddTransactionDialog(
                         Box(
                             modifier = Modifier
                                 .background(
-                                    color = Color(0xFF222222),
+                                    color = ChipBg,
                                     shape = RoundedCornerShape(6.dp)
                                 )
                                 .clickable { showAddAccountDialog = true }
@@ -2617,9 +2617,9 @@ fun AddTransactionDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.LightGray, modifier = Modifier.size(12.dp))
+                                Icon(Icons.Default.Add, contentDescription = "Add", tint = MutedText, modifier = Modifier.size(12.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Account", color = Color.LightGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("Account", color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -2644,12 +2644,12 @@ fun AddTransactionDialog(
                                 val isSel = selectedToAccount == acc.name
                                 Text(
                                     text = acc.name,
-                                    color = if (isSel) Color.White else MutedText,
+                                    color = if (isSel) PrimaryText else MutedText,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier
                                         .background(
-                                            color = if (isSel) Color(0xFF4CAF50) else Color(0xFF161616),
+                                            color = if (isSel) PositiveGreen else ChipBg,
                                             shape = RoundedCornerShape(6.dp)
                                         )
                                         .clickable { selectedToAccount = acc.name }
@@ -2671,12 +2671,12 @@ fun AddTransactionDialog(
                         value = note,
                         onValueChange = { note = it },
                         placeholder = { Text("Notes info...", color = MutedText, fontSize = 14.sp) },
-                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                        textStyle = TextStyle(color = PrimaryText, fontSize = 14.sp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
+                            focusedTextColor = PrimaryText,
+                            unfocusedTextColor = PrimaryText,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
@@ -2696,12 +2696,12 @@ fun AddTransactionDialog(
                         value = tags,
                         onValueChange = { tags = it },
                         placeholder = { Text("e.g. work, trip", color = MutedText, fontSize = 14.sp) },
-                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                        textStyle = TextStyle(color = PrimaryText, fontSize = 14.sp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
+                            focusedTextColor = PrimaryText,
+                            unfocusedTextColor = PrimaryText,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
@@ -2735,14 +2735,14 @@ fun AddTransactionDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF141414))
+                        .background(LayerCard)
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Surface(
                         modifier = Modifier.weight(1f).clickable { numpadVisible = true },
-                        color = Color(0xFF222222),
+                        color = ChipBg,
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text(
@@ -2752,11 +2752,11 @@ fun AddTransactionDialog(
                     }
                     Surface(
                         modifier = Modifier.weight(1f).clickable { doSave() },
-                        color = Color(0xFFFD5A4E),
+                        color = Accent,
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text(
-                            "DONE", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                            "DONE", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
                         )
                     }
@@ -2766,35 +2766,35 @@ fun AddTransactionDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF191F26)) // Dark bluish grey panel
+                    .background(ChipBg) // Dark bluish grey panel
             ) {
                 // Currency Tab Panel: DH vs ₹
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
-                        .background(Color(0xFF1E2732))
+                        .background(ChipBg)
                 ) {
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .background(if (activeCurrency == "DH") Color(0xFF293542) else Color.Transparent)
+                            .background(if (activeCurrency == "DH") DividerColor else Color.Transparent)
                             .clickable { activeCurrency = "DH" },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("DH", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("DH", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .background(if (activeCurrency == "₹") Color(0xFF293542) else Color.Transparent)
+                            .background(if (activeCurrency == "₹") DividerColor else Color.Transparent)
                             .clickable { activeCurrency = "₹" },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("₹", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("₹", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -2811,13 +2811,13 @@ fun AddTransactionDialog(
                         rowKeys.forEach { key ->
                             val isAction = key == "BACK" || key == "-" || key == "MINIMIZE" || key == "DONE"
                             val weight = if (key == "DONE") 2f else 1f
-                            val containerCol = if (key == "DONE") Color(0xFFFD5A4E) else if (isAction) Color(0xFF212A34) else Color(0xFF191F26)
+                            val containerCol = if (key == "DONE") Accent else if (isAction) DividerColor else ChipBg
 
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
                                     .height(56.dp)
-                                    .border(1.dp, Color(0x1AFFFFFF))
+                                    .border(1.dp, DividerColor)
                                     .background(containerCol)
                                     .clickable {
                                         when (key) {
@@ -2852,20 +2852,20 @@ fun AddTransactionDialog(
                                     Icon(
                                         imageVector = Icons.Default.ArrowBack,
                                         contentDescription = "Backspace",
-                                        tint = Color.White,
+                                        tint = PrimaryText,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 } else if (key == "MINIMIZE") {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowDown,
                                         contentDescription = "Minimize keypad",
-                                        tint = Color.White,
+                                        tint = PrimaryText,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 } else {
                                     Text(
                                         text = key,
-                                        color = Color.White,
+                                        color = PrimaryText,
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -2879,7 +2879,7 @@ fun AddTransactionDialog(
             if (showAddCategoryDialog) {
                 AlertDialog(
                     onDismissRequest = { showAddCategoryDialog = false },
-                    title = { Text("Add Custom Category", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+                    title = { Text("Add Custom Category", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
                     text = {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("Category Name for $type", color = MutedText, fontSize = 12.sp)
@@ -2887,13 +2887,13 @@ fun AddTransactionDialog(
                                 value = newCategoryText,
                                 onValueChange = { newCategoryText = it },
                                 placeholder = { Text("e.g. Shopping", color = MutedText, fontSize = 14.sp) },
-                                textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                                textStyle = TextStyle(color = PrimaryText, fontSize = 14.sp),
                                 colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color(0xFF262626),
-                                    unfocusedContainerColor = Color(0xFF1E1E1E),
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
-                                    focusedIndicatorColor = Color(0xFFFD5A4E),
+                                    focusedContainerColor = ChipBg,
+                                    unfocusedContainerColor = LayerCard,
+                                    focusedTextColor = PrimaryText,
+                                    unfocusedTextColor = PrimaryText,
+                                    focusedIndicatorColor = Accent,
                                     unfocusedIndicatorColor = Color.Transparent
                                 ),
                                 modifier = Modifier.fillMaxWidth()
@@ -2912,15 +2912,15 @@ fun AddTransactionDialog(
                                 }
                             }
                         ) {
-                            Text("Add", color = Color(0xFFFD5A4E), fontWeight = FontWeight.Bold)
+                            Text("Add", color = Accent, fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showAddCategoryDialog = false; newCategoryText = "" }) {
-                            Text("Cancel", color = Color.White)
+                            Text("Cancel", color = PrimaryText)
                         }
                     },
-                    containerColor = Color(0xFF161616),
+                    containerColor = ChipBg,
                     shape = RoundedCornerShape(12.dp)
                 )
             }
@@ -2928,7 +2928,7 @@ fun AddTransactionDialog(
             if (showAddAccountDialog) {
                 AlertDialog(
                     onDismissRequest = { showAddAccountDialog = false },
-                    title = { Text("Add Custom Account", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+                    title = { Text("Add Custom Account", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
                     text = {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text("Account Name", color = MutedText, fontSize = 12.sp)
@@ -2936,12 +2936,12 @@ fun AddTransactionDialog(
                                 value = newAccountText,
                                 onValueChange = { newAccountText = it },
                                 placeholder = { Text("e.g. Pocket Cash", color = MutedText, fontSize = 14.sp) },
-                                textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                                textStyle = TextStyle(color = PrimaryText, fontSize = 14.sp),
                                 colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color(0xFF262626),
-                                    unfocusedContainerColor = Color(0xFF1E1E1E),
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
+                                    focusedContainerColor = ChipBg,
+                                    unfocusedContainerColor = LayerCard,
+                                    focusedTextColor = PrimaryText,
+                                    unfocusedTextColor = PrimaryText,
                                     focusedIndicatorColor = Color(0xFF2196F3),
                                     unfocusedIndicatorColor = Color.Transparent
                                 ),
@@ -2959,7 +2959,7 @@ fun AddTransactionDialog(
                                         modifier = Modifier
                                             .weight(1f)
                                             .background(
-                                                color = if (isSelected) Color(0xFF2196F3).copy(alpha = 0.2f) else Color(0xFF1E1E1E),
+                                                color = if (isSelected) Color(0xFF2196F3).copy(alpha = 0.2f) else LayerCard,
                                                 shape = RoundedCornerShape(6.dp)
                                             )
                                             .border(
@@ -2971,7 +2971,7 @@ fun AddTransactionDialog(
                                             .padding(vertical = 8.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(label, color = if (isSelected) Color(0xFF2196F3) else Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(label, color = if (isSelected) Color(0xFF2196F3) else PrimaryText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -2980,12 +2980,12 @@ fun AddTransactionDialog(
                             TextField(
                                 value = newAccountBal,
                                 onValueChange = { newAccountBal = it },
-                                textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                                textStyle = TextStyle(color = PrimaryText, fontSize = 14.sp),
                                 colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color(0xFF262626),
-                                    unfocusedContainerColor = Color(0xFF1E1E1E),
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
+                                    focusedContainerColor = ChipBg,
+                                    unfocusedContainerColor = LayerCard,
+                                    focusedTextColor = PrimaryText,
+                                    unfocusedTextColor = PrimaryText,
                                     focusedIndicatorColor = Color(0xFF2196F3),
                                     unfocusedIndicatorColor = Color.Transparent
                                 ),
@@ -3012,10 +3012,10 @@ fun AddTransactionDialog(
                     },
                     dismissButton = {
                         TextButton(onClick = { showAddAccountDialog = false; newAccountText = ""; newAccountBal = "0.0" }) {
-                            Text("Cancel", color = Color.White)
+                            Text("Cancel", color = PrimaryText)
                         }
                     },
-                    containerColor = Color(0xFF161616),
+                    containerColor = ChipBg,
                     shape = RoundedCornerShape(12.dp)
                 )
             }
@@ -3041,7 +3041,7 @@ fun EmptyStatePlaceholder() {
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "No financial entries logged yet",
-            color = Color.White,
+            color = PrimaryText,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )

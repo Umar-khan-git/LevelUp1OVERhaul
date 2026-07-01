@@ -24,7 +24,7 @@ import com.example.data.CategoryEntity
 import com.example.data.TransactionEntity
 import com.example.ui.theme.*
 
-private val BudgetAccent = Color(0xFFFD5A4E)
+private val BudgetAccent = Accent
 private val BudgetGood = Color(0xFF26C281)
 private val BudgetWarn = Color(0xFFFFB300)
 
@@ -78,7 +78,7 @@ fun BudgetSubScreen(
         ) {
             Text("◀", color = MutedText, fontSize = 18.sp,
                 modifier = Modifier.clickable { onMonthKeyChange(getPreviousMonthKey(selectedMonthKey)) }.padding(horizontal = 16.dp))
-            Text(formatYearMonth(selectedMonthKey), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(formatYearMonth(selectedMonthKey), color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Text("▶", color = MutedText, fontSize = 18.sp,
                 modifier = Modifier.clickable { onMonthKeyChange(getNextMonthKey(selectedMonthKey)) }.padding(horizontal = 16.dp))
         }
@@ -165,8 +165,8 @@ private fun OverallBudgetCard(budget: Double, spent: Double, onClick: () -> Unit
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Monthly budget", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                Text(if (budget > 0) money(budget) else "Tap to set", color = if (budget > 0) Color.White else BudgetAccent, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text("Monthly budget", color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                Text(if (budget > 0) money(budget) else "Tap to set", color = if (budget > 0) PrimaryText else BudgetAccent, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.height(12.dp))
             ProgressBar(frac = frac, color = barColor)
@@ -207,7 +207,7 @@ private fun CategoryBudgetRow(category: String, budget: Double, spent: Double, o
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(category, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(category, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Text(
                     if (budget > 0) "${money(spent)} / ${money(budget)}" else money(spent),
                     color = MutedText, fontSize = 12.sp
@@ -232,7 +232,7 @@ private fun CategoryBudgetRow(category: String, budget: Double, spent: Double, o
 @Composable
 private fun ProgressBar(frac: Float, color: Color) {
     Box(
-        modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFF2A2A2A))
+        modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(ChipBg)
     ) {
         Box(modifier = Modifier.fillMaxWidth(frac).fillMaxHeight().clip(RoundedCornerShape(4.dp)).background(color))
     }
@@ -258,7 +258,7 @@ private fun SetBudgetDialog(
         Surface(color = LayerCard, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, BorderHighlight)) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text("Set budget", color = MutedText, fontSize = 12.sp)
-                Text(title, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(title, color = PrimaryText, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(16.dp))
                 OutlinedTextField(
                     value = amountStr,
@@ -269,8 +269,8 @@ private fun SetBudgetDialog(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BudgetAccent,
                         unfocusedBorderColor = BorderHighlight,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = PrimaryText,
                         cursorColor = BudgetAccent,
                         focusedLabelColor = BudgetAccent,
                         unfocusedLabelColor = MutedText
@@ -288,7 +288,7 @@ private fun SetBudgetDialog(
                         colors = CheckboxDefaults.colors(checkedColor = BudgetAccent, uncheckedColor = MutedText)
                     )
                     Column {
-                        Text("Repeat every month", color = Color.White, fontSize = 14.sp)
+                        Text("Repeat every month", color = PrimaryText, fontSize = 14.sp)
                         Text(
                             if (applyEveryMonth) "Applies to all months" else "Only ${formatYearMonth(monthKey)}",
                             color = MutedText, fontSize = 11.sp
@@ -309,7 +309,7 @@ private fun SetBudgetDialog(
                             if (amt > 0) onSave(amt, applyEveryMonth)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BudgetAccent)
-                    ) { Text("Save", color = Color.White) }
+                    ) { Text("Save", color = PrimaryText) }
                 }
             }
         }
