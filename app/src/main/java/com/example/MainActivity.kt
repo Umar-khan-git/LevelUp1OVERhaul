@@ -793,18 +793,18 @@ fun SettingsButton(viewModel: DashboardViewModel) {
                         colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
-                    ) { Text("⬇   Export / Back up", color = PrimaryText, fontWeight = FontWeight.Bold) }
+                    ) { Text("⬇   Export / Back up", color = Color.White, fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = { showSettings = false; importLauncher.launch(arrayOf("application/json")) },
                         colors = ButtonDefaults.buttonColors(containerColor = ChipBg),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) { Text("⬆   Import / Restore", color = PrimaryText, fontWeight = FontWeight.Bold) }
-                    Text("Restoring replaces your current data with the backup.", color = Color(0xFFFFAB40), fontSize = 10.sp)
-                    HorizontalDivider(color = BorderHighlight)
+                    Text("Restoring replaces your current data with the backup.", color = NegativeRed, fontSize = 10.sp)
+                    HorizontalDivider(color = DividerColor)
                     Button(
                         onClick = { showClearConfirm = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A1515)),
+                        colors = ButtonDefaults.buttonColors(containerColor = NegativeRed.copy(alpha = 0.12f)),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) { Text("🗑   Start fresh (clear all data)", color = NegativeRed, fontWeight = FontWeight.Bold) }
@@ -2633,7 +2633,7 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                                     .background(
                                         if (isComplete) {
                                             if (isGood) InstaGradient else Brush.linearGradient(
-                                                listOf(Color(0xFFFD1D1D), Color(0xFFFD1D1D))
+                                                listOf(NegativeRed, NegativeRed)
                                             )
                                         } else {
                                             Brush.linearGradient(listOf(ChipBg, ChipBg))
@@ -3177,7 +3177,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                                 Text("Savings rate", color = MutedText, fontSize = 10.sp)
                                 Text(
                                     "${savingsRate.toInt()}% of income saved",
-                                    color = if (savingsRate >= 20) PositiveGreen else Color(0xFFFFAB40),
+                                    color = if (savingsRate >= 20) PositiveGreen else NegativeRed,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )

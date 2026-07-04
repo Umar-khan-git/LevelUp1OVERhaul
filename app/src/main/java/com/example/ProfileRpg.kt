@@ -33,12 +33,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.ui.theme.Accent
+import com.example.ui.theme.AccentEnd
 import com.example.ui.theme.BorderHighlight
-import com.example.ui.theme.BrandAccent
+import com.example.ui.theme.ChipBg
+import com.example.ui.theme.DividerColor
 import com.example.ui.theme.InstaOrange
 import com.example.ui.theme.InstaPurple
 import com.example.ui.theme.LayerCard
 import com.example.ui.theme.MutedText
+import com.example.ui.theme.PositiveGreen
+import com.example.ui.theme.PrimaryText
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.cos
@@ -122,14 +127,24 @@ object MottoStore {
     }
 }
 
+// Shared text-field styling for the light theme (used by every dialog here).
+@Composable
+private fun rpgTextFieldColors() = TextFieldDefaults.colors(
+    focusedTextColor = PrimaryText, unfocusedTextColor = PrimaryText,
+    cursorColor = Accent,
+    focusedContainerColor = ChipBg, unfocusedContainerColor = ChipBg,
+    focusedIndicatorColor = Accent, unfocusedIndicatorColor = DividerColor
+)
+
 @Composable
 fun MottoCard(mottos: List<String>, onChange: (List<String>) -> Unit) {
     var showAdd by remember { mutableStateOf(false) }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF12091F)),
-        border = BorderStroke(1.dp, InstaPurple.copy(alpha = 0.4f)),
+        colors = CardDefaults.cardColors(containerColor = LayerCard),
+        border = BorderStroke(1.dp, Accent.copy(alpha = 0.35f)),
         shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth().animateContentSize()
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
@@ -141,11 +156,11 @@ fun MottoCard(mottos: List<String>, onChange: (List<String>) -> Unit) {
                 Text("💬  MY MOTTO", color = MutedText, fontSize = 10.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
                 Box(
                     modifier = Modifier
-                        .background(InstaPurple.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                        .background(Accent.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
                         .clickable { showAdd = true }
                         .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
-                    Text("+ Add", color = InstaPurple, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                    Text("+ Add", color = Accent, fontSize = 11.sp, fontWeight = FontWeight.Black)
                 }
             }
 
@@ -162,10 +177,10 @@ fun MottoCard(mottos: List<String>, onChange: (List<String>) -> Unit) {
                         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        Text("“", color = InstaPurple, fontSize = 26.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(end = 6.dp))
+                        Text("“", color = Accent, fontSize = 26.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(end = 6.dp))
                         Text(
                             quote,
-                            color = Color.White,
+                            color = PrimaryText,
                             fontSize = 15.sp,
                             fontStyle = FontStyle.Italic,
                             lineHeight = 21.sp,
@@ -182,7 +197,7 @@ fun MottoCard(mottos: List<String>, onChange: (List<String>) -> Unit) {
                         )
                     }
                     if (i < mottos.lastIndex) {
-                        androidx.compose.material3.HorizontalDivider(color = Color.White.copy(alpha = 0.06f))
+                        androidx.compose.material3.HorizontalDivider(color = DividerColor)
                     }
                 }
             }
@@ -193,34 +208,31 @@ fun MottoCard(mottos: List<String>, onChange: (List<String>) -> Unit) {
         var text by remember { mutableStateOf("") }
         Dialog(onDismissRequest = { showAdd = false }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(20.dp),
-                border = BorderStroke(1.dp, BorderHighlight),
+                border = BorderStroke(1.dp, DividerColor),
                 modifier = Modifier.fillMaxWidth().padding(8.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("Add a Motto", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("Add a Motto", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Black)
                     OutlinedTextField(
                         value = text,
                         onValueChange = { text = it },
                         placeholder = { Text("e.g. Discipline beats motivation.", color = MutedText, fontSize = 12.sp) },
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)
-                        ),
+                        colors = rpgTextFieldColors(),
                         modifier = Modifier.fillMaxWidth()
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { if (text.isNotBlank()) { onChange(mottos + text.trim()); showAdd = false } },
-                            colors = ButtonDefaults.buttonColors(containerColor = InstaPurple),
+                            colors = ButtonDefaults.buttonColors(containerColor = Accent),
                             modifier = Modifier.weight(1f)
                         ) { Text("Add", color = Color.White, fontWeight = FontWeight.Bold) }
                         Button(
                             onClick = { showAdd = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                            colors = ButtonDefaults.buttonColors(containerColor = ChipBg),
                             modifier = Modifier.weight(1f)
-                        ) { Text("Cancel", color = Color.White) }
+                        ) { Text("Cancel", color = PrimaryText) }
                     }
                 }
             }
@@ -344,15 +356,15 @@ fun HexRadar(stats: List<Triple<String, Int, Color>>, modifier: Modifier = Modif
             fun pt(frac: Float, ang: Double) =
                 Offset(cx + (frac * r * cos(ang)).toFloat(), cy - (frac * r * sin(ang)).toFloat())
 
-            // concentric hexagon rings
+            // concentric hexagon rings (dark lines on the light canvas)
             listOf(0.25f, 0.5f, 0.75f, 1f).forEach { f ->
                 val rp = angles.map { pt(f, it) }
                 for (i in rp.indices) {
-                    drawLine(Color.White.copy(alpha = if (f == 1f) 0.16f else 0.05f), rp[i], rp[(i + 1) % 6], strokeWidth = if (f == 1f) 2f else 1f)
+                    drawLine(PrimaryText.copy(alpha = if (f == 1f) 0.16f else 0.06f), rp[i], rp[(i + 1) % 6], strokeWidth = if (f == 1f) 2f else 1f)
                 }
             }
             // spokes
-            angles.forEach { drawLine(Color.White.copy(alpha = 0.06f), Offset(cx, cy), pt(1f, it), strokeWidth = 1f) }
+            angles.forEach { drawLine(PrimaryText.copy(alpha = 0.07f), Offset(cx, cy), pt(1f, it), strokeWidth = 1f) }
 
             // data polygon
             val dataPts = stats.mapIndexed { i, s -> pt((s.second / 100f) * anim.value, angles[i]) }
@@ -360,8 +372,8 @@ fun HexRadar(stats: List<Triple<String, Int, Color>>, modifier: Modifier = Modif
                 dataPts.forEachIndexed { i, p -> if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y) }
                 close()
             }
-            drawPath(path, brush = Brush.radialGradient(listOf(InstaPurple.copy(alpha = 0.5f), BrandAccent.copy(alpha = 0.28f)), center = Offset(cx, cy), radius = r))
-            drawPath(path, color = InstaPurple, style = Stroke(width = 3f))
+            drawPath(path, brush = Brush.radialGradient(listOf(Accent.copy(alpha = 0.42f), AccentEnd.copy(alpha = 0.22f)), center = Offset(cx, cy), radius = r))
+            drawPath(path, color = Accent, style = Stroke(width = 3f))
             dataPts.forEachIndexed { i, p ->
                 drawCircle(stats[i].third.copy(alpha = 0.25f), 10f, p)
                 drawCircle(stats[i].third, 5f, p)
@@ -403,7 +415,7 @@ fun HeroStat(icon: String, value: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(icon, fontSize = 15.sp)
         Spacer(Modifier.height(2.dp))
-        Text(value, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black, maxLines = 1)
+        Text(value, color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Black, maxLines = 1)
         Text(label, color = MutedText, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
     }
 }
@@ -424,15 +436,15 @@ fun QuestRow(quest: DailyQuest) {
             modifier = Modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(if (quest.done) Brush.linearGradient(listOf(InstaPurple, BrandAccent)) else Brush.linearGradient(listOf(Color(0xFF222222), Color(0xFF222222))))
-                .border(1.dp, if (quest.done) Color.Transparent else Color(0xFF3A3A3A), CircleShape)
+                .background(if (quest.done) Brush.linearGradient(listOf(Accent, AccentEnd)) else Brush.linearGradient(listOf(ChipBg, ChipBg)))
+                .border(1.dp, if (quest.done) Color.Transparent else DividerColor, CircleShape)
         ) {
             if (quest.done) Text("✓", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Black)
         }
         Spacer(Modifier.width(12.dp))
         Text(
             quest.title,
-            color = if (quest.done) MutedText else Color.White,
+            color = if (quest.done) MutedText else PrimaryText,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             textDecoration = if (quest.done) TextDecoration.LineThrough else TextDecoration.None,
@@ -440,7 +452,7 @@ fun QuestRow(quest: DailyQuest) {
         )
         Text(
             "+${quest.xp} XP",
-            color = if (quest.done) Color(0xFF66BB6A) else InstaOrange,
+            color = if (quest.done) PositiveGreen else Accent,
             fontSize = 12.sp,
             fontWeight = FontWeight.Black
         )
@@ -463,9 +475,9 @@ fun AchievementBadge(a: Achievement, modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(18.dp))
                 .background(
                     if (a.unlocked) Brush.linearGradient(listOf(a.color.copy(alpha = 0.30f), a.color.copy(alpha = 0.12f)))
-                    else Brush.linearGradient(listOf(Color(0xFF161616), Color(0xFF161616)))
+                    else Brush.linearGradient(listOf(ChipBg, ChipBg))
                 )
-                .border(1.dp, if (a.unlocked) a.color.copy(alpha = 0.6f) else Color(0xFF2A2A2A), RoundedCornerShape(18.dp))
+                .border(1.dp, if (a.unlocked) a.color.copy(alpha = 0.6f) else DividerColor, RoundedCornerShape(18.dp))
         ) {
             if (a.unlocked) Text(a.icon, fontSize = 26.sp)
             else Text("🔒", fontSize = 18.sp)
@@ -473,7 +485,7 @@ fun AchievementBadge(a: Achievement, modifier: Modifier = Modifier) {
         Spacer(Modifier.height(5.dp))
         Text(
             a.title,
-            color = if (a.unlocked) Color.White else MutedText,
+            color = if (a.unlocked) PrimaryText else MutedText,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -515,7 +527,7 @@ fun JourneyTimeline(currentLevel: Int) {
                                 .align(Alignment.CenterStart)
                                 .fillMaxWidth(0.5f)
                                 .height(2.dp)
-                                .background(if (reached) InstaPurple else Color(0xFF2A2A2A))
+                                .background(if (reached) Accent else ChipBg)
                         )
                     }
                     if (i != marks.lastIndex) {
@@ -524,7 +536,7 @@ fun JourneyTimeline(currentLevel: Int) {
                                 .align(Alignment.CenterEnd)
                                 .fillMaxWidth(0.5f)
                                 .height(2.dp)
-                                .background(if (currentLevel >= marks[i + 1]) InstaPurple else Color(0xFF2A2A2A))
+                                .background(if (currentLevel >= marks[i + 1]) Accent else ChipBg)
                         )
                     }
                     Box(
@@ -533,19 +545,19 @@ fun JourneyTimeline(currentLevel: Int) {
                             .size(if (isCurrent) 40.dp else 32.dp)
                             .clip(CircleShape)
                             .background(
-                                if (reached) Brush.linearGradient(listOf(InstaPurple, BrandAccent))
-                                else Brush.linearGradient(listOf(Color(0xFF1A1A1A), Color(0xFF1A1A1A)))
+                                if (reached) Brush.linearGradient(listOf(Accent, AccentEnd))
+                                else Brush.linearGradient(listOf(ChipBg, ChipBg))
                             )
-                            .border(if (isCurrent) 2.dp else 1.dp, if (reached) Color.White.copy(alpha = 0.5f) else Color(0xFF2A2A2A), CircleShape)
+                            .border(if (isCurrent) 2.dp else 1.dp, if (reached) Color.White.copy(alpha = 0.6f) else DividerColor, CircleShape)
                     ) {
                         Text("$lvl", color = if (reached) Color.White else MutedText, fontSize = 12.sp, fontWeight = FontWeight.Black)
                     }
                 }
                 Spacer(Modifier.height(6.dp))
-                Text("LVL $lvl", color = if (reached) Color.White else MutedText, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Text("LVL $lvl", color = if (reached) PrimaryText else MutedText, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 Text(
                     titleForLevel(lvl),
-                    color = if (reached) BrandAccent else MutedText.copy(alpha = 0.6f),
+                    color = if (reached) Accent else MutedText.copy(alpha = 0.6f),
                     fontSize = 8.sp,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
@@ -573,12 +585,12 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
             RpgSectionLabel("MY ROADMAP")
             Box(
                 modifier = Modifier
-                    .background(InstaPurple.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
-                    .border(1.dp, InstaPurple.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                    .background(Accent.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                    .border(1.dp, Accent.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                     .clickable { showAdd = true }
                     .padding(horizontal = 10.dp, vertical = 5.dp)
             ) {
-                Text("+ New Path", color = InstaPurple, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                Text("+ New Path", color = Accent, fontSize = 11.sp, fontWeight = FontWeight.Black)
             }
         }
 
@@ -589,12 +601,13 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                 colors = CardDefaults.cardColors(containerColor = LayerCard),
                 border = BorderStroke(1.dp, BorderHighlight),
                 shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("🧭", fontSize = 34.sp)
                     Spacer(Modifier.height(8.dp))
-                    Text("No roadmap yet", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("No roadmap yet", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(4.dp))
                     Text(
                         "Set a goal and break it into steps. Earn XP each time you complete one.",
@@ -603,7 +616,7 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                     Spacer(Modifier.height(14.dp))
                     Button(
                         onClick = { showAdd = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = InstaPurple),
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent),
                         shape = RoundedCornerShape(10.dp)
                     ) { Text("Create your first roadmap", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp) }
                 }
@@ -617,6 +630,7 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                     colors = CardDefaults.cardColors(containerColor = LayerCard),
                     border = BorderStroke(1.dp, BorderHighlight),
                     shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -624,7 +638,7 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                             Text(rm.icon, fontSize = 22.sp)
                             Spacer(Modifier.width(10.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(rm.name, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(rm.name, color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text("$done / $total steps", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                             Text(
@@ -640,12 +654,12 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                         Spacer(Modifier.height(10.dp))
                         // progress bar
                         Box(
-                            modifier = Modifier.fillMaxWidth().height(7.dp).clip(RoundedCornerShape(100)).background(Color.White.copy(alpha = 0.08f))
+                            modifier = Modifier.fillMaxWidth().height(7.dp).clip(RoundedCornerShape(100)).background(ChipBg)
                         ) {
                             val animFrac by animateFloatAsState(frac, tween(700, easing = FastOutSlowInEasing), label = "rm")
                             Box(
                                 modifier = Modifier.fillMaxHeight().fillMaxWidth(animFrac).clip(RoundedCornerShape(100))
-                                    .background(Brush.horizontalGradient(listOf(InstaPurple, BrandAccent, InstaOrange)))
+                                    .background(Brush.horizontalGradient(listOf(Accent, AccentEnd)))
                             )
                         }
 
@@ -667,7 +681,7 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                         Spacer(Modifier.height(8.dp))
                         Text(
                             "+ Add step",
-                            color = InstaPurple,
+                            color = Accent,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { addStepFor = rm.id }.padding(vertical = 4.dp)
@@ -724,7 +738,7 @@ fun RoadmapTrail(steps: List<RoadmapStep>, onToggle: (Int) -> Unit) {
                                 .align(Alignment.CenterStart)
                                 .fillMaxWidth(0.5f)
                                 .height(3.dp)
-                                .background(if (steps[i - 1].done) InstaPurple else Color(0xFF2A2A2A))
+                                .background(if (steps[i - 1].done) Accent else ChipBg)
                         )
                     }
                     if (i != steps.lastIndex) {
@@ -733,7 +747,7 @@ fun RoadmapTrail(steps: List<RoadmapStep>, onToggle: (Int) -> Unit) {
                                 .align(Alignment.CenterEnd)
                                 .fillMaxWidth(0.5f)
                                 .height(3.dp)
-                                .background(if (step.done) InstaPurple else Color(0xFF2A2A2A))
+                                .background(if (step.done) Accent else ChipBg)
                         )
                     }
                     Box(
@@ -742,10 +756,10 @@ fun RoadmapTrail(steps: List<RoadmapStep>, onToggle: (Int) -> Unit) {
                             .size(38.dp)
                             .clip(CircleShape)
                             .background(
-                                if (step.done) Brush.linearGradient(listOf(InstaPurple, BrandAccent))
-                                else Brush.linearGradient(listOf(Color(0xFF1E1E1E), Color(0xFF1E1E1E)))
+                                if (step.done) Brush.linearGradient(listOf(Accent, AccentEnd))
+                                else Brush.linearGradient(listOf(ChipBg, ChipBg))
                             )
-                            .border(if (step.done) 0.dp else 1.dp, if (step.done) Color.Transparent else Color(0xFF3A3A3A), CircleShape)
+                            .border(if (step.done) 0.dp else 1.dp, if (step.done) Color.Transparent else DividerColor, CircleShape)
                             .clickable { onToggle(i) }
                     ) {
                         if (step.done) Text("✓", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
@@ -755,7 +769,7 @@ fun RoadmapTrail(steps: List<RoadmapStep>, onToggle: (Int) -> Unit) {
                 Spacer(Modifier.height(6.dp))
                 Text(
                     step.title,
-                    color = if (step.done) MutedText else Color.White,
+                    color = if (step.done) MutedText else PrimaryText,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
@@ -777,13 +791,13 @@ fun AddRoadmapDialog(onDismiss: () -> Unit, onCreate: (String, String, List<Stri
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+            colors = CardDefaults.cardColors(containerColor = LayerCard),
             shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, BorderHighlight),
+            border = BorderStroke(1.dp, DividerColor),
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("New Roadmap", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Black)
+                Text("New Roadmap", color = PrimaryText, fontSize = 17.sp, fontWeight = FontWeight.Black)
                 Text("Pick a starter template (you can edit everything after), or start from scratch.", color = MutedText, fontSize = 11.sp, lineHeight = 15.sp)
 
                 // Template chips
@@ -796,8 +810,8 @@ fun AddRoadmapDialog(onDismiss: () -> Unit, onCreate: (String, String, List<Stri
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(10.dp))
-                                        .background(if (sel) InstaPurple.copy(alpha = 0.2f) else Color(0xFF222222))
-                                        .border(1.dp, if (sel) InstaPurple else Color(0xFF333333), RoundedCornerShape(10.dp))
+                                        .background(if (sel) Accent.copy(alpha = 0.15f) else ChipBg)
+                                        .border(1.dp, if (sel) Accent else DividerColor, RoundedCornerShape(10.dp))
                                         .clickable {
                                             selectedTemplate = tpl.name
                                             icon = tpl.icon
@@ -806,7 +820,7 @@ fun AddRoadmapDialog(onDismiss: () -> Unit, onCreate: (String, String, List<Stri
                                         }
                                         .padding(horizontal = 10.dp, vertical = 10.dp)
                                 ) {
-                                    Text("${tpl.icon}  ${tpl.name}", color = if (sel) Color.White else MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Text("${tpl.icon}  ${tpl.name}", color = if (sel) Accent else PrimaryText, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
                             }
                         }
@@ -817,10 +831,7 @@ fun AddRoadmapDialog(onDismiss: () -> Unit, onCreate: (String, String, List<Stri
                     value = name,
                     onValueChange = { name = it },
                     placeholder = { Text("Roadmap name (e.g. Become a Cloud Engineer)", color = MutedText, fontSize = 12.sp) },
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                        focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)
-                    ),
+                    colors = rpgTextFieldColors(),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -832,14 +843,14 @@ fun AddRoadmapDialog(onDismiss: () -> Unit, onCreate: (String, String, List<Stri
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = { if (name.isNotBlank()) onCreate(name.trim(), icon, steps) },
-                        colors = ButtonDefaults.buttonColors(containerColor = InstaPurple),
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent),
                         modifier = Modifier.weight(1f)
                     ) { Text("Create", color = Color.White, fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                        colors = ButtonDefaults.buttonColors(containerColor = ChipBg),
                         modifier = Modifier.weight(1f)
-                    ) { Text("Cancel", color = Color.White) }
+                    ) { Text("Cancel", color = PrimaryText) }
                 }
             }
         }
@@ -851,34 +862,31 @@ fun AddStepDialog(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
     var title by remember { mutableStateOf("") }
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+            colors = CardDefaults.cardColors(containerColor = LayerCard),
             shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, BorderHighlight),
+            border = BorderStroke(1.dp, DividerColor),
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("Add a Step", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                Text("Add a Step", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Black)
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
                     placeholder = { Text("e.g. Pass AWS Cloud Practitioner", color = MutedText, fontSize = 12.sp) },
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                        focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)
-                    ),
+                    colors = rpgTextFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = { if (title.isNotBlank()) onAdd(title.trim()) },
-                        colors = ButtonDefaults.buttonColors(containerColor = InstaPurple),
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent),
                         modifier = Modifier.weight(1f)
                     ) { Text("Add", color = Color.White, fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                        colors = ButtonDefaults.buttonColors(containerColor = ChipBg),
                         modifier = Modifier.weight(1f)
-                    ) { Text("Cancel", color = Color.White) }
+                    ) { Text("Cancel", color = PrimaryText) }
                 }
             }
         }
@@ -891,44 +899,38 @@ fun EditIdentityDialog(currentTitle: String, currentTagline: String, onDismiss: 
     var tag by remember { mutableStateOf(currentTagline) }
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+            colors = CardDefaults.cardColors(containerColor = LayerCard),
             shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, BorderHighlight),
+            border = BorderStroke(1.dp, DividerColor),
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("Edit Your Identity", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                Text("Edit Your Identity", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Black)
                 OutlinedTextField(
                     value = t, onValueChange = { t = it },
                     label = { Text("Title", color = MutedText) },
                     placeholder = { Text("e.g. The Builder", color = MutedText) },
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                        focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)
-                    ),
+                    colors = rpgTextFieldColors(),
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = tag, onValueChange = { tag = it },
                     label = { Text("Tagline", color = MutedText) },
                     placeholder = { Text("e.g. Building the best version of me", color = MutedText) },
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                        focusedContainerColor = Color(0xFF222222), unfocusedContainerColor = Color(0xFF1E1E1E)
-                    ),
+                    colors = rpgTextFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = { onSave(t.trim(), tag.trim()) },
-                        colors = ButtonDefaults.buttonColors(containerColor = InstaPurple),
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent),
                         modifier = Modifier.weight(1f)
                     ) { Text("Save", color = Color.White, fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                        colors = ButtonDefaults.buttonColors(containerColor = ChipBg),
                         modifier = Modifier.weight(1f)
-                    ) { Text("Cancel", color = Color.White) }
+                    ) { Text("Cancel", color = PrimaryText) }
                 }
             }
         }
