@@ -16,11 +16,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -59,7 +62,7 @@ import kotlin.math.sin
 data class RoadmapStep(val title: String, val done: Boolean)
 data class Roadmap(val id: String, val name: String, val icon: String, val steps: List<RoadmapStep>)
 data class RoadmapTemplate(val name: String, val icon: String, val steps: List<String>)
-data class Achievement(val id: String, val title: String, val icon: String, val desc: String, val unlocked: Boolean, val color: Color)
+data class Achievement(val id: String, val title: String, val icon: ImageVector, val desc: String, val unlocked: Boolean, val color: Color)
 data class DailyQuest(val id: String, val title: String, val xp: Int, val done: Boolean)
 
 // ============================================================
@@ -157,7 +160,7 @@ fun MottoCard(mottos: List<String>, onChange: (List<String>) -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("💬  MY MOTTO", color = MutedText, fontSize = 10.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
+                Text("MY MOTTO", color = MutedText, fontSize = 10.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
                 Box(
                     modifier = Modifier
                         .background(Accent.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
@@ -303,16 +306,16 @@ fun computeAchievements(
     studyHours: Float, bestSleep: Float, milestonesDone: Int,
     goalsTracked: Int, monthSaved: Double
 ): List<Achievement> = listOf(
-    Achievement("first", "First Step", "👣", "Open the app", true, InstaPurple),
-    Achievement("week", "Week Warrior", "🔥", "7-day streak", streak >= 7, InstaOrange),
-    Achievement("century", "Centurion", "💯", "100-day streak", streak >= 100, StreakOrange),
-    Achievement("words", "Wordsmith", "📖", "Learn 25 words", words >= 25, AccountBlue),
-    Achievement("scholar", "Scholar", "🎓", "20 study hours", studyHours >= 20f, AccountTeal),
-    Achievement("rested", "Well Rested", "😴", "Sleep 7.5h+", bestSleep >= 7.5f, PositiveGreen),
-    Achievement("habit", "Habit Hero", "⚡", "14-day habit streak", habitMaxStreak >= 14, StreakOrange),
-    Achievement("goal", "Goal Getter", "🎯", "Track a goal", goalsTracked >= 1, Accent),
-    Achievement("trail", "Trailblazer", "🧭", "Finish 5 milestones", milestonesDone >= 5, AccentPink),
-    Achievement("saver", "Big Saver", "💰", "Save money this month", monthSaved > 0, PositiveGreen)
+    Achievement("first", "First Step", Icons.Default.DirectionsWalk, "Open the app", true, InstaPurple),
+    Achievement("week", "Week Warrior", Icons.Default.LocalFireDepartment, "7-day streak", streak >= 7, InstaOrange),
+    Achievement("century", "Centurion", Icons.Default.WorkspacePremium, "100-day streak", streak >= 100, StreakOrange),
+    Achievement("words", "Wordsmith", Icons.Default.MenuBook, "Learn 25 words", words >= 25, AccountBlue),
+    Achievement("scholar", "Scholar", Icons.Default.School, "20 study hours", studyHours >= 20f, AccountTeal),
+    Achievement("rested", "Well Rested", Icons.Default.Bedtime, "Sleep 7.5h+", bestSleep >= 7.5f, PositiveGreen),
+    Achievement("habit", "Habit Hero", Icons.Default.Bolt, "14-day habit streak", habitMaxStreak >= 14, StreakOrange),
+    Achievement("goal", "Goal Getter", Icons.Default.TrackChanges, "Track a goal", goalsTracked >= 1, Accent),
+    Achievement("trail", "Trailblazer", Icons.Default.Explore, "Finish 5 milestones", milestonesDone >= 5, AccentPink),
+    Achievement("saver", "Big Saver", Icons.Default.Savings, "Save money this month", monthSaved > 0, PositiveGreen)
 )
 
 fun computeDailyQuests(
@@ -483,8 +486,8 @@ fun AchievementBadge(a: Achievement, modifier: Modifier = Modifier) {
                 )
                 .border(1.dp, if (a.unlocked) a.color.copy(alpha = 0.6f) else DividerColor, RoundedCornerShape(18.dp))
         ) {
-            if (a.unlocked) Text(a.icon, fontSize = 26.sp)
-            else Text("🔒", fontSize = 18.sp)
+            if (a.unlocked) Icon(a.icon, contentDescription = a.title, tint = a.color, modifier = Modifier.size(28.dp))
+            else Icon(Icons.Default.Lock, contentDescription = "locked", tint = MutedText, modifier = Modifier.size(22.dp))
         }
         Spacer(Modifier.height(5.dp))
         Text(
@@ -609,7 +612,7 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🧭", fontSize = 34.sp)
+                    Icon(Icons.Default.Explore, contentDescription = null, tint = Accent, modifier = Modifier.size(34.dp))
                     Spacer(Modifier.height(8.dp))
                     Text("No roadmap yet", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(4.dp))
@@ -645,13 +648,15 @@ fun RoadmapSection(roadmaps: List<Roadmap>, onChange: (List<Roadmap>) -> Unit) {
                                 Text(rm.name, color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text("$done / $total steps", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
-                            Text(
-                                "🗑",
-                                fontSize = 14.sp,
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "delete roadmap",
+                                tint = MutedText,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
                                     .clickable { onChange(roadmaps.filter { it.id != rm.id }) }
                                     .padding(6.dp)
+                                    .size(18.dp)
                             )
                         }
 

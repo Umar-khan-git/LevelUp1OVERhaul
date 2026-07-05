@@ -81,6 +81,7 @@ import com.example.ui.theme.TertiaryText
 import com.example.ui.theme.NegativeRed
 import com.example.ui.theme.PositiveGreen
 import com.example.ui.theme.StreakOrange
+import com.example.ui.theme.SleepNavy
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -1044,20 +1045,22 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     if (!habit.isCompleted && rpgPrefs.getBoolean("grace_${habit.id}", false)) {
-                                        Text(
-                                            text = "🛡",
-                                            fontSize = 12.sp,
-                                            modifier = Modifier.padding(end = 3.dp)
+                                        Icon(
+                                            Icons.Default.Shield,
+                                            contentDescription = "streak protected",
+                                            tint = MutedText,
+                                            modifier = Modifier.padding(end = 3.dp).size(12.dp)
                                         )
                                     }
                                     if (habit.streak > 0) {
-                                        Text(
-                                            text = "🔥 ${habit.streak}",
-                                            color = InstaOrange,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier.padding(end = 4.dp)
-                                        )
+                                        ) {
+                                            Icon(Icons.Default.LocalFireDepartment, contentDescription = null, tint = StreakOrange, modifier = Modifier.size(12.dp))
+                                            Spacer(Modifier.width(2.dp))
+                                            Text(text = "${habit.streak}", color = StreakOrange, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        }
                                     }
                                     IconButton(
                                         onClick = { editingHabit = habit },
@@ -3418,7 +3421,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("😴", fontSize = 22.sp)
+                        Icon(Icons.Default.Bedtime, contentDescription = null, tint = SleepNavy, modifier = Modifier.size(22.dp))
                         Text(String.format("%.1f h", avgSleepWeek), color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
                         Text("Avg sleep", color = MutedText, fontSize = 9.sp)
                     }
@@ -3430,7 +3433,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("✅", fontSize = 22.sp)
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PositiveGreen, modifier = Modifier.size(22.dp))
                         Text("$habitsDone / $habitsTotal", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
                         Text("Habits today", color = MutedText, fontSize = 9.sp)
                     }
@@ -3442,7 +3445,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🎯", fontSize = 22.sp)
+                        Icon(Icons.Default.TrackChanges, contentDescription = null, tint = Accent, modifier = Modifier.size(22.dp))
                         Text("$actionsThisWeek", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
                         Text("Goal actions", color = MutedText, fontSize = 9.sp)
                     }
@@ -3466,15 +3469,22 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                             val d = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -i) }
                             val dateStr = sdfDate.format(d.time)
                             val log = sleepLogs.find { it.dateString == dateStr }
-                            val emoji = when {
-                                log == null -> "—"
-                                log.hoursSlept >= 6.5f -> "😎"
-                                log.hoursSlept >= 5.0f -> "😐"
-                                else -> "😴"
+                            val faceIcon = when {
+                                log == null -> null
+                                log.hoursSlept >= 6.5f -> Icons.Default.SentimentSatisfiedAlt
+                                log.hoursSlept >= 5.0f -> Icons.Default.SentimentNeutral
+                                else -> Icons.Default.SentimentDissatisfied
+                            }
+                            val faceTint = when {
+                                log == null -> MutedText
+                                log.hoursSlept >= 6.5f -> PositiveGreen
+                                log.hoursSlept >= 5.0f -> StreakOrange
+                                else -> NegativeRed
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text(dayNames.getOrElse(d.get(Calendar.DAY_OF_WEEK) - 1) { " " }, color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                Text(emoji, fontSize = 18.sp)
+                                if (faceIcon != null) Icon(faceIcon, contentDescription = null, tint = faceTint, modifier = Modifier.size(18.dp))
+                                else Text("—", color = MutedText, fontSize = 18.sp)
                                 if (log != null) {
                                     Text("${log.hoursSlept}h", color = MutedText, fontSize = 8.sp)
                                 }
@@ -3494,7 +3504,10 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("✍️  Weekly Reflection", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(Icons.Default.EditNote, contentDescription = null, tint = Accent, modifier = Modifier.size(18.dp))
+                        Text("Weekly Reflection", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                    }
 
                     Text("How was your week?", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     OutlinedTextField(
