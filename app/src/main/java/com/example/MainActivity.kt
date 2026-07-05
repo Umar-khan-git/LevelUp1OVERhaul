@@ -3154,7 +3154,7 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Weekly Review", color = PrimaryText, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("Weekly Review", color = PrimaryText, fontSize = 21.sp, fontWeight = FontWeight.Black)
                     Text(weekDateRange, color = MutedText, fontSize = 11.sp)
                 }
                 Box(
@@ -3186,8 +3186,8 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Bedtime, contentDescription = null, tint = SleepNavy, modifier = Modifier.size(22.dp))
-                        Text(String.format("%.1f h", avgSleepWeek), color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Icon(Icons.Default.Bedtime, contentDescription = null, tint = SleepNavy, modifier = Modifier.size(24.dp))
+                        Text(String.format("%.1f h", avgSleepWeek), color = PrimaryText, fontSize = 22.sp, fontWeight = FontWeight.Black)
                         Text("Avg sleep", color = MutedText, fontSize = 9.sp)
                     }
                 }
@@ -3198,8 +3198,8 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PositiveGreen, modifier = Modifier.size(22.dp))
-                        Text("$habitsDone / $habitsTotal", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = PositiveGreen, modifier = Modifier.size(24.dp))
+                        Text("$habitsDone / $habitsTotal", color = PrimaryText, fontSize = 22.sp, fontWeight = FontWeight.Black)
                         Text("Habits today", color = MutedText, fontSize = 9.sp)
                     }
                 }
@@ -3210,8 +3210,8 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.TrackChanges, contentDescription = null, tint = Accent, modifier = Modifier.size(22.dp))
-                        Text("$actionsThisWeek", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Icon(Icons.Default.TrackChanges, contentDescription = null, tint = Accent, modifier = Modifier.size(24.dp))
+                        Text("$actionsThisWeek", color = PrimaryText, fontSize = 22.sp, fontWeight = FontWeight.Black)
                         Text("Goal actions", color = MutedText, fontSize = 9.sp)
                     }
                 }
