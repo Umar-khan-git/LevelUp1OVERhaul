@@ -82,6 +82,7 @@ import com.example.ui.theme.NegativeRed
 import com.example.ui.theme.PositiveGreen
 import com.example.ui.theme.StreakOrange
 import com.example.ui.theme.SleepNavy
+import com.example.ui.theme.SleepNavyDark
 import com.example.ui.theme.AccountBlue
 import com.example.ui.theme.AccentPink
 import com.example.ui.theme.AccountTeal
@@ -2474,6 +2475,38 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Black
             )
+        }
+
+        // Last night hero (navy)
+        item {
+            val last = sleepLogs.firstOrNull()
+            Box(
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
+                    .background(Brush.linearGradient(listOf(SleepNavyDark, SleepNavy)))
+                    .padding(20.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("LAST NIGHT", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+                        Icon(Icons.Default.Bedtime, contentDescription = null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    if (last != null) {
+                        val h = last.hoursSlept.toInt()
+                        val m = Math.round((last.hoursSlept - h) * 60f)
+                        Text("${h}h ${m}m", color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Black)
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "${last.sleptAt} → ${last.wokeUp} · ${if (last.hoursSlept >= 6.5f) "good night" else "short night"}",
+                            color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.Medium
+                        )
+                    } else {
+                        Text("—", color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Black)
+                        Spacer(Modifier.height(4.dp))
+                        Text("No sleep logged yet", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+                    }
+                }
+            }
         }
 
         // Stats boxes grid
