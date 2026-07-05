@@ -1967,6 +1967,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
             .fillMaxSize()
             .padding(horizontal = 20.dp)
     ) {
+        Text("Learn", color = PrimaryText, fontSize = 26.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(top = 10.dp, bottom = 2.dp))
         // Sub tabs rows
         Row(
             modifier = Modifier
