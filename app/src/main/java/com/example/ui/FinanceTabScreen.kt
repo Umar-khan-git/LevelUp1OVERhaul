@@ -657,23 +657,38 @@ fun TransactionRowItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Circle category symbol
+            // Category icon tile — soft tint + vector icon, coloured by type
+            val tileTint = when (tx.type) {
+                "INCOME" -> GreenTint
+                "EXPENSE" -> PinkTint
+                else -> VioletTint
+            }
+            val iconTint = when (tx.type) {
+                "INCOME" -> PositiveGreen
+                "EXPENSE" -> NegativeRed
+                else -> Accent
+            }
+            val catIcon = when (tx.category.trim().lowercase()) {
+                "food", "food & dining", "groceries", "dining" -> Icons.Default.Restaurant
+                "transport", "travel" -> Icons.Default.DirectionsBus
+                "wifi", "utilities", "subscriptions" -> Icons.Default.Wifi
+                "salary" -> Icons.Default.Payments
+                "freelance" -> Icons.Default.Work
+                "cafe", "café", "baber", "baqer" -> Icons.Default.LocalCafe
+                "shopping" -> Icons.Default.ShoppingCart
+                "transfer" -> Icons.Default.SwapHoriz
+                "health & fitness", "health" -> Icons.Default.FavoriteBorder
+                "entertainment" -> Icons.Default.Movie
+                "education" -> Icons.Default.School
+                else -> if (tx.type == "INCOME") Icons.Default.Payments else Icons.Default.ShoppingCart
+            }
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .background(ChipBg, shape = RoundedCornerShape(100)),
+                    .background(tileTint, shape = RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                val emojiSymbol = when (tx.category.trim().lowercase()) {
-                    "food" -> "🍱"
-                    "transport" -> "🚌"
-                    "wifi" -> "🌐"
-                    "salary" -> "💵"
-                    "freelance" -> "💻"
-                    "baber", "baqer" -> "🥖"
-                    else -> "🛒"
-                }
-                Text(emojiSymbol, fontSize = 16.sp)
+                Icon(catIcon, contentDescription = tx.category, tint = iconTint, modifier = Modifier.size(18.dp))
             }
 
             Column(modifier = Modifier.weight(1f)) {

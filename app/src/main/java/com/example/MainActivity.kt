@@ -80,6 +80,7 @@ import com.example.ui.theme.ChipBg
 import com.example.ui.theme.TertiaryText
 import com.example.ui.theme.NegativeRed
 import com.example.ui.theme.PositiveGreen
+import com.example.ui.theme.StreakOrange
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -681,7 +682,7 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(text = "🔥", fontSize = 14.sp)
+                Icon(Icons.Default.LocalFireDepartment, contentDescription = "streak", tint = StreakOrange, modifier = Modifier.size(14.dp))
                 Text(
                     text = "$appOpenStreak DAY${if (appOpenStreak != 1) "S" else ""}",
                     color = Accent,
@@ -866,12 +867,12 @@ fun BottomNavBar(
         ) {
             val tabItems = listOf(
                 TabItem("today", "Today", Icons.Default.Home),
-                TabItem("goals", "Goals", Icons.Default.Star),
-                TabItem("learning", "Learn", Icons.Default.List),
-                TabItem("stats", "Profile", Icons.Default.Person),
-                TabItem("sleep", "Sleep", Icons.Default.Notifications),
-                TabItem("finance", "Money", Icons.Default.ShoppingCart),
-                TabItem("week", "Week", Icons.Default.Refresh)
+                TabItem("goals", "Goals", Icons.Default.TrackChanges),
+                TabItem("learning", "Learn", Icons.Default.MenuBook),
+                TabItem("stats", "Stats", Icons.Default.BarChart),
+                TabItem("sleep", "Sleep", Icons.Default.DarkMode),
+                TabItem("finance", "Money", Icons.Default.AccountBalanceWallet),
+                TabItem("week", "Week", Icons.Default.CalendarMonth)
             )
 
             tabItems.forEach { item ->
