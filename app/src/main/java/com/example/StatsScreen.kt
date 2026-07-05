@@ -3,8 +3,13 @@ package com.example
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -51,6 +56,91 @@ fun StatCardTile(
                 Text(label, color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
             Text(value, color = PrimaryText, fontSize = 24.sp, fontWeight = FontWeight.Black)
+        }
+    }
+}
+
+/** A single character stat for the hexagon layout. */
+data class HexStatNode(val label: String, val value: Int, val icon: ImageVector, val color: Color)
+
+/**
+ * Character-sheet hexagon: a center avatar (tappable to set a photo) with six
+ * circular stat nodes placed around it, matching the redesign reference.
+ */
+@Composable
+fun CharacterHexNodes(
+    stats: List<HexStatNode>,
+    centerInitial: String,
+    centerBitmap: android.graphics.Bitmap?,
+    onAvatarTap: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.height(300.dp), contentAlignment = Alignment.Center) {
+        val radius = 108.dp
+        // faint hexagon web behind the nodes
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val cx = size.width / 2f
+            val cy = size.height / 2f
+            val rPx = radius.toPx() * 0.86f
+            val web = Path()
+            for (i in 0..5) {
+                val a = Math.toRadians((-90 + i * 60).toDouble())
+                val x = cx + rPx * Math.cos(a).toFloat()
+                val y = cy + rPx * Math.sin(a).toFloat()
+                if (i == 0) web.moveTo(x, y) else web.lineTo(x, y)
+            }
+            web.close()
+            drawPath(web, color = Color(0x14000000), style = Stroke(width = 1.2.dp.toPx()))
+            // spokes
+            for (i in 0..5) {
+                val a = Math.toRadians((-90 + i * 60).toDouble())
+                drawLine(
+                    Color(0x0F000000),
+                    Offset(cx, cy),
+                    Offset(cx + rPx * Math.cos(a).toFloat(), cy + rPx * Math.sin(a).toFloat()),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+        }
+        // six stat nodes
+        stats.take(6).forEachIndexed { i, s ->
+            val angle = Math.toRadians((-90 + i * 60).toDouble())
+            val dx = (radius.value * Math.cos(angle)).dp
+            val dy = (radius.value * Math.sin(angle)).dp
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.align(Alignment.Center).offset(x = dx, y = dy)
+            ) {
+                Box(
+                    modifier = Modifier.size(54.dp).clip(CircleShape).background(LayerCard)
+                        .border(2.dp, s.color, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(s.icon, contentDescription = null, tint = s.color, modifier = Modifier.size(14.dp))
+                        Text("${s.value}", color = s.color, fontSize = 15.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+                Spacer(Modifier.height(3.dp))
+                Text(s.label, color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Medium)
+            }
+        }
+        // center avatar (tap to add/change photo)
+        Box(
+            modifier = Modifier.size(76.dp).clip(CircleShape).background(AccentGradient)
+                .clickable { onAvatarTap() },
+            contentAlignment = Alignment.Center
+        ) {
+            if (centerBitmap != null) {
+                androidx.compose.foundation.Image(
+                    bitmap = centerBitmap.asImageBitmap(),
+                    contentDescription = "Profile photo",
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier.matchParentSize().clip(CircleShape)
+                )
+            } else {
+                Text(centerInitial, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
+            }
         }
     }
 }

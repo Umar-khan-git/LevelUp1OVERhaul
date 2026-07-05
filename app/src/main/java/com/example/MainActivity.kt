@@ -84,6 +84,7 @@ import com.example.ui.theme.StreakOrange
 import com.example.ui.theme.SleepNavy
 import com.example.ui.theme.AccountBlue
 import com.example.ui.theme.AccentPink
+import com.example.ui.theme.AccountTeal
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -2940,7 +2941,20 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
                         }
                     }
                     Spacer(Modifier.height(8.dp))
-                    HexRadar(stats = hexStats, modifier = Modifier.fillMaxWidth().height(320.dp))
+                    CharacterHexNodes(
+                        stats = listOf(
+                            HexStatNode("Discipline", disciplineScore, Icons.Default.Shield, StreakOrange),
+                            HexStatNode("Focus", focusScore, Icons.Default.TrackChanges, Accent),
+                            HexStatNode("Knowledge", knowledgeScore, Icons.Default.Psychology, AccountBlue),
+                            HexStatNode("Consistency", consistencyScore, Icons.Default.Autorenew, AccountTeal),
+                            HexStatNode("Health", healthScore, Icons.Default.FavoriteBorder, PositiveGreen),
+                            HexStatNode("Languages", languagesScore, Icons.Default.Translate, AccentPink)
+                        ),
+                        centerInitial = profileUserName.trim().take(1).uppercase(),
+                        centerBitmap = photoBitmap,
+                        onAvatarTap = { photoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                     Spacer(Modifier.height(10.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("XP to Level ${level + 1}", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
