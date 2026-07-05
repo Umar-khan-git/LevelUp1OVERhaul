@@ -3260,57 +3260,31 @@ fun WeekTabScreen(viewModel: DashboardViewModel) {
             }
         }
 
-        // Reflection
+        // This week's highlights (auto — no typing)
         item {
+            val fmtW = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+            val last7 = (0..6).map { off ->
+                java.util.Calendar.getInstance().let { c -> c.add(java.util.Calendar.DAY_OF_YEAR, -off); fmtW.format(c.time) }
+            }.toSet()
+            val weekSleeps = sleepLogs.filter { it.dateString in last7 }
+            val bestSleep = weekSleeps.maxOfOrNull { it.hoursSlept } ?: 0f
+            val nightsLogged = weekSleeps.size
+            val topStreak = habits.maxOfOrNull { it.streak } ?: 0
+            val weekAgo = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
+            val goalHoursWeek = pointLogs.filter { it.dateAdded >= weekAgo }.sumOf { it.hours.toDouble() }
             Card(
                 colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(18.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Icon(Icons.Default.EditNote, contentDescription = null, tint = Accent, modifier = Modifier.size(18.dp))
-                        Text("Weekly Reflection", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                    }
-
-                    Text("How was your week?", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    OutlinedTextField(
-                        value = textReflection,
-                        onValueChange = { textReflection = it },
-                        placeholder = { Text("What went well? What could be better? How do you feel?", color = MutedText, fontSize = 12.sp) },
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = PrimaryText,
-                            unfocusedTextColor = PrimaryText,
-                            focusedContainerColor = ChipBg,
-                            unfocusedContainerColor = LayerCard
-                        ),
-                        modifier = Modifier.fillMaxWidth().height(120.dp)
-                    )
-
-                    Text("Next week — top 3 actions", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    OutlinedTextField(
-                        value = textIntention,
-                        onValueChange = { textIntention = it },
-                        placeholder = { Text("What will you focus on? Be specific.", color = MutedText, fontSize = 12.sp) },
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = PrimaryText,
-                            unfocusedTextColor = PrimaryText,
-                            focusedContainerColor = ChipBg,
-                            unfocusedContainerColor = LayerCard
-                        ),
-                        modifier = Modifier.fillMaxWidth().height(90.dp)
-                    )
-
-                    Button(
-                        onClick = {
-                            viewModel.saveReflection(currentWeekKey, textReflection, textIntention)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Save Reflections", color = PrimaryText, fontWeight = FontWeight.Bold)
-                    }
+                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("THIS WEEK'S HIGHLIGHTS", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    HighlightRow(Icons.Default.LocalFireDepartment, StreakOrange, "Longest habit streak", "$topStreak days")
+                    HighlightRow(Icons.Default.Bedtime, SleepNavy, "Best night's sleep", if (bestSleep > 0f) String.format("%.1f h", bestSleep) else "—")
+                    HighlightRow(Icons.Default.TrackChanges, Accent, "Goal actions logged", "$actionsThisWeek")
+                    HighlightRow(Icons.Default.Schedule, AccountBlue, "Focus time this week", String.format("%.1f h", goalHoursWeek))
+                    HighlightRow(Icons.Default.CheckCircle, PositiveGreen, "Nights tracked", "$nightsLogged / 7")
                 }
             }
         }

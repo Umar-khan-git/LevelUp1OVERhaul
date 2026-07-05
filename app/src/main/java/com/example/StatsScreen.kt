@@ -55,6 +55,27 @@ fun StatCardTile(
     }
 }
 
+/** One highlight line: tinted icon chip + label + right-aligned value. */
+@Composable
+fun HighlightRow(icon: ImageVector, tint: Color, label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(
+                modifier = Modifier.size(28.dp).background(tint.copy(alpha = 0.15f), RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(16.dp))
+            }
+            Text(label, color = SecondaryText, fontSize = 13.sp)
+        }
+        Text(value, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
 /** "XP this week" card with a violet area+line chart and a green weekly delta. */
 @Composable
 fun XpWeekChart(series: List<Float>, deltaXp: Int) {
