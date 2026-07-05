@@ -44,6 +44,10 @@ import com.example.ui.theme.LayerCard
 import com.example.ui.theme.MutedText
 import com.example.ui.theme.PositiveGreen
 import com.example.ui.theme.PrimaryText
+import com.example.ui.theme.AccentPink
+import com.example.ui.theme.StreakOrange
+import com.example.ui.theme.AccountBlue
+import com.example.ui.theme.AccountTeal
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.cos
@@ -301,14 +305,14 @@ fun computeAchievements(
 ): List<Achievement> = listOf(
     Achievement("first", "First Step", "👣", "Open the app", true, InstaPurple),
     Achievement("week", "Week Warrior", "🔥", "7-day streak", streak >= 7, InstaOrange),
-    Achievement("century", "Centurion", "💯", "100-day streak", streak >= 100, Color(0xFFFFD54F)),
-    Achievement("words", "Wordsmith", "📖", "Learn 25 words", words >= 25, Color(0xFF42A5F5)),
-    Achievement("scholar", "Scholar", "🎓", "20 study hours", studyHours >= 20f, Color(0xFF26C6DA)),
-    Achievement("rested", "Well Rested", "😴", "Sleep 7.5h+", bestSleep >= 7.5f, Color(0xFF66BB6A)),
-    Achievement("habit", "Habit Hero", "⚡", "14-day habit streak", habitMaxStreak >= 14, Color(0xFFFF7043)),
-    Achievement("goal", "Goal Getter", "🎯", "Track a goal", goalsTracked >= 1, Color(0xFFAB47BC)),
-    Achievement("trail", "Trailblazer", "🧭", "Finish 5 milestones", milestonesDone >= 5, Color(0xFFEC407A)),
-    Achievement("saver", "Big Saver", "💰", "Save money this month", monthSaved > 0, Color(0xFF66BB6A))
+    Achievement("century", "Centurion", "💯", "100-day streak", streak >= 100, StreakOrange),
+    Achievement("words", "Wordsmith", "📖", "Learn 25 words", words >= 25, AccountBlue),
+    Achievement("scholar", "Scholar", "🎓", "20 study hours", studyHours >= 20f, AccountTeal),
+    Achievement("rested", "Well Rested", "😴", "Sleep 7.5h+", bestSleep >= 7.5f, PositiveGreen),
+    Achievement("habit", "Habit Hero", "⚡", "14-day habit streak", habitMaxStreak >= 14, StreakOrange),
+    Achievement("goal", "Goal Getter", "🎯", "Track a goal", goalsTracked >= 1, Accent),
+    Achievement("trail", "Trailblazer", "🧭", "Finish 5 milestones", milestonesDone >= 5, AccentPink),
+    Achievement("saver", "Big Saver", "💰", "Save money this month", monthSaved > 0, PositiveGreen)
 )
 
 fun computeDailyQuests(

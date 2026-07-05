@@ -43,8 +43,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 // Theme helper colors
-val BlueIncome = Color(0xFF29B6F6)
-val RedExpense = Color(0xFFEF5350)
+val BlueIncome = PositiveGreen
+val RedExpense = NegativeRed
 val DarkGreyBg = CanvasBg
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -717,7 +717,7 @@ fun TransactionRowItem(
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
-                                    .background(Color(0x22FD5A4E), shape = RoundedCornerShape(4.dp))
+                                    .background(Accent.copy(alpha = 0.13f), shape = RoundedCornerShape(4.dp))
                                     .padding(horizontal = 5.dp, vertical = 1.dp)
                             )
                         }
@@ -1221,7 +1221,7 @@ fun StatsSubScreen(
     // Visual Palette supporting vibrant pieces for the donut arcs
     val colorPalette = listOf(
         Accent, // Coral Red
-        Color(0xFF29B6F6), // Sky Blue
+        PositiveGreen, // Sky Blue
         Color(0xFFFFC312), // Yellow
         Color(0xFF90FF90), // Soft Green
         Color(0xFFFF85FF), // Pastel Pink
@@ -1288,7 +1288,7 @@ fun StatsSubScreen(
                 listOf("EXPENSE" to "Expenses", "INCOME" to "Income").forEach { (typeKey, label) ->
                     val isSel = statsType == typeKey
                     val activeBg = if (isSel) {
-                        if (typeKey == "EXPENSE") Color(0xFFEF5350) else Color(0xFF29B6F6)
+                        if (typeKey == "EXPENSE") NegativeRed else PositiveGreen
                     } else {
                         Color.Transparent
                     }
@@ -2123,12 +2123,12 @@ fun TotalSubScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Check, contentDescription = "Budget", tint = if (totalExpense > monthlyBudget) Color(0xFFEF5350) else Accent, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Check, contentDescription = "Budget", tint = if (totalExpense > monthlyBudget) NegativeRed else Accent, modifier = Modifier.size(18.dp))
                         Column {
                             Text("Budget", color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 text = String.format("Spent: DH %,.2f / DH %,.2f (%s)", totalExpense, monthlyBudget.toDouble(), budgetStatus),
-                                color = if (totalExpense > monthlyBudget) Color(0xFFEF5350) else MutedText,
+                                color = if (totalExpense > monthlyBudget) NegativeRed else MutedText,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -2410,7 +2410,7 @@ fun AddTransactionDialog(
             ) {
                 listOf("INCOME" to "Income", "EXPENSE" to "Expense", "TRANSFER" to "Transfer").forEach { (typeVal, label) ->
                     val isSel = type == typeVal
-                    val activeColor = if (typeVal == "EXPENSE") Color(0xFFEF5350) else BlueIncome
+                    val activeColor = if (typeVal == "EXPENSE") NegativeRed else BlueIncome
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -2496,13 +2496,13 @@ fun AddTransactionDialog(
                     ) {
                         Text(
                             text = "$activeCurrency ",
-                            color = if (type == "EXPENSE") Color(0xFFEF5350) else BlueIncome,
+                            color = if (type == "EXPENSE") NegativeRed else BlueIncome,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black
                         )
                         Text(
                             text = activeAmount,
-                            color = if (type == "EXPENSE") Color(0xFFEF5350) else BlueIncome,
+                            color = if (type == "EXPENSE") NegativeRed else BlueIncome,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.border(BorderStroke(0.5.dp, DividerColor)).padding(horizontal = 4.dp)
@@ -2598,7 +2598,7 @@ fun AddTransactionDialog(
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .background(
-                                        color = if (isSel) Color(0xFF2196F3) else ChipBg,
+                                        color = if (isSel) AccountBlue else ChipBg,
                                         shape = RoundedCornerShape(6.dp)
                                     )
                                     .clickable { selectedAccount = acc.name }
@@ -2942,7 +2942,7 @@ fun AddTransactionDialog(
                                     unfocusedContainerColor = LayerCard,
                                     focusedTextColor = PrimaryText,
                                     unfocusedTextColor = PrimaryText,
-                                    focusedIndicatorColor = Color(0xFF2196F3),
+                                    focusedIndicatorColor = AccountBlue,
                                     unfocusedIndicatorColor = Color.Transparent
                                 ),
                                 modifier = Modifier.fillMaxWidth()
@@ -2959,19 +2959,19 @@ fun AddTransactionDialog(
                                         modifier = Modifier
                                             .weight(1f)
                                             .background(
-                                                color = if (isSelected) Color(0xFF2196F3).copy(alpha = 0.2f) else LayerCard,
+                                                color = if (isSelected) AccountBlue.copy(alpha = 0.2f) else LayerCard,
                                                 shape = RoundedCornerShape(6.dp)
                                             )
                                             .border(
                                                 width = if (isSelected) 1.dp else 0.dp,
-                                                color = if (isSelected) Color(0xFF2196F3) else Color.Transparent,
+                                                color = if (isSelected) AccountBlue else Color.Transparent,
                                                 shape = RoundedCornerShape(6.dp)
                                             )
                                             .clickable { newAccountType = valType }
                                             .padding(vertical = 8.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(label, color = if (isSelected) Color(0xFF2196F3) else PrimaryText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(label, color = if (isSelected) AccountBlue else PrimaryText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -2986,7 +2986,7 @@ fun AddTransactionDialog(
                                     unfocusedContainerColor = LayerCard,
                                     focusedTextColor = PrimaryText,
                                     unfocusedTextColor = PrimaryText,
-                                    focusedIndicatorColor = Color(0xFF2196F3),
+                                    focusedIndicatorColor = AccountBlue,
                                     unfocusedIndicatorColor = Color.Transparent
                                 ),
                                 modifier = Modifier.fillMaxWidth()
@@ -3007,7 +3007,7 @@ fun AddTransactionDialog(
                                 }
                             }
                         ) {
-                            Text("Add", color = Color(0xFF2196F3), fontWeight = FontWeight.Bold)
+                            Text("Add", color = AccountBlue, fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {

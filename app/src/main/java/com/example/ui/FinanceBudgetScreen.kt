@@ -25,8 +25,8 @@ import com.example.data.TransactionEntity
 import com.example.ui.theme.*
 
 private val BudgetAccent = Accent
-private val BudgetGood = Color(0xFF26C281)
-private val BudgetWarn = Color(0xFFFFB300)
+private val BudgetGood = PositiveGreen
+private val BudgetWarn = StreakOrange
 
 private fun money(v: Double): String = String.format("DH %,.2f", v)
 
