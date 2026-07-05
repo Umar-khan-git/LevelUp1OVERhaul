@@ -621,6 +621,9 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
         val headerBitmap = remember(headerPhotoPath) {
             headerPhotoPath?.let { try { BitmapFactory.decodeFile(it) } catch (e: Exception) { null } }
         }
+        val rpgHeaderPrefs = remember { context.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE) }
+        val headerLevel = remember { rpgHeaderPrefs.getInt("cached_level", 1) }
+        val headerTitle = remember { rpgHeaderPrefs.getString("cached_title", "Newcomer") ?: "Newcomer" }
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             // Profile photo / initial
@@ -654,23 +657,17 @@ fun AppHeader(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
 
             Column {
                 Text(
-                    text = userName.uppercase(),
-                    style = TextStyle(
-                        fontFamily = FontFamily.SansSerif,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 22.sp,
-                        letterSpacing = (-0.5).sp,
-                        brush = InstaGradient
-                    )
+                    text = userName,
+                    color = PrimaryText,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-0.3).sp
                 )
                 Text(
-                    text = "Self-Improvement Hub",
-                    style = TextStyle(
-                        color = MutedText,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
+                    text = "Lvl $headerLevel · $headerTitle",
+                    color = MutedText,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -949,6 +946,15 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+            Column(modifier = Modifier.padding(top = 8.dp)) {
+                Text("Today", color = PrimaryText, fontSize = 26.sp, fontWeight = FontWeight.Black)
+                Text(
+                    java.text.SimpleDateFormat("EEEE, MMMM d", java.util.Locale.getDefault()).format(java.util.Date()),
+                    color = MutedText, fontSize = 12.sp, fontWeight = FontWeight.Medium
+                )
+            }
+        }
         if (showGuideToday) {
             item {
                 GuideTip(
@@ -1478,10 +1484,10 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Core Point-System Goals",
+                    text = "Goals",
                     color = PrimaryText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Black
                 )
                 IconButton(onClick = { showAddGoal = true }) {
                     Icon(Icons.Default.Add, contentDescription = "Add Goal", tint = BrandAccent)
@@ -2463,10 +2469,10 @@ fun SleepTabScreen(viewModel: DashboardViewModel) {
         }
         item {
             Text(
-                text = "Sleep Routine Calculator",
+                text = "Sleep",
                 color = PrimaryText,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Black
             )
         }
 
@@ -2885,6 +2891,9 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
     var tagline by remember { mutableStateOf(rpgPrefs.getString("user_tagline", "Building the best version of me.") ?: "Building the best version of me.") }
     val displayTitle = if (customTitle.isNotBlank()) customTitle else titleForLevel(level)
     var showEditIdentity by remember { mutableStateOf(false) }
+    LaunchedEffect(level, displayTitle) {
+        rpgPrefs.edit().putInt("cached_level", level).putString("cached_title", displayTitle).apply()
+    }
 
     // ---- Power level (composite) ----
     val statSum = focusScore + disciplineScore + knowledgeScore + languagesScore + healthScore + consistencyScore
