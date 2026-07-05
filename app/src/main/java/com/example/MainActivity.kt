@@ -2918,6 +2918,41 @@ fun ProfileScreen(viewModel: DashboardViewModel, appOpenStreak: Int = 1) {
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // ===== CHARACTER SHEET (radar + power + XP) =====
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                border = BorderStroke(1.dp, BorderHighlight),
+                shape = RoundedCornerShape(22.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("Character sheet", color = PrimaryText, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.background(Accent, RoundedCornerShape(100)).padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Default.Bolt, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                            Text("PWR $powerLevel", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    HexRadar(stats = hexStats, modifier = Modifier.fillMaxWidth().height(320.dp))
+                    Spacer(Modifier.height(10.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("XP to Level ${level + 1}", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("$xpInLevel / 1000", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(100)).background(ChipBg)) {
+                        Box(modifier = Modifier.fillMaxWidth(xpProgress.coerceIn(0f, 1f)).fillMaxHeight().clip(RoundedCornerShape(100)).background(AccentGradient))
+                    }
+                }
+            }
+        }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatCardTile("Total XP", "$totalXP", Icons.Default.Bolt, StreakOrange, Modifier.weight(1f))

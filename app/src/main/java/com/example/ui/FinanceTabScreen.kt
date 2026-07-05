@@ -2467,8 +2467,8 @@ fun AddTransactionDialog(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // DATE ROW (tap to pick / backdate)
                 Row(
@@ -2787,7 +2787,7 @@ fun AddTransactionDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .height(40.dp)
                         .background(ChipBg)
                 ) {
                     Box(
@@ -2831,7 +2831,7 @@ fun AddTransactionDialog(
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
-                                    .height(56.dp)
+                                    .height(46.dp)
                                     .border(1.dp, DividerColor)
                                     .background(containerCol)
                                     .clickable {
