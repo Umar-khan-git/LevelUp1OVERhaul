@@ -1,5 +1,8 @@
 package com.example.ui.theme
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
@@ -24,13 +27,22 @@ val MutedText = Color(0xFF9A958C)       // secondary / meta text
 val TertiaryText = Color(0xFFB9B3A8)    // disabled / zero-state
 val InactiveIcon = Color(0xFFB4AFA6)    // inactive nav icons / muted glyphs
 
-// --- Primary accent — Violet ---
-val Accent = Color(0xFF6D5CE7)
+// --- Primary accent (runtime-switchable via ThemeState) ---
+enum class AccentTheme(val key: String, val label: String, val color: Color, val gradient: Brush) {
+    VIOLET("violet", "Violet", Color(0xFF6D5CE7), Brush.linearGradient(listOf(Color(0xFF6D5CE7), Color(0xFF9C4FDC)))),
+    OCEAN("ocean", "Ocean", Color(0xFF3A8DDE), Brush.linearGradient(listOf(Color(0xFF3A8DDE), Color(0xFF5BC8C0)))),
+    SUNSET("sunset", "Sunset", Color(0xFFE1477E), Brush.linearGradient(listOf(Color(0xFFE1477E), Color(0xFFF7A34B)))),
+    EMERALD("emerald", "Emerald", Color(0xFF2FA36B), Brush.linearGradient(listOf(Color(0xFF2FA36B), Color(0xFF7ED957))));
+    companion object { fun fromKey(k: String?): AccentTheme = entries.firstOrNull { it.key == k } ?: VIOLET }
+}
+
+object ThemeState { var current by mutableStateOf(AccentTheme.VIOLET) }
+
+val Accent: Color get() = ThemeState.current.color
+val AccentGradient: Brush get() = ThemeState.current.gradient
 val AccentBright = Color(0xFF7C5CFF)
 val AccentPink = Color(0xFFE1477E)
 val AccentOrange = Color(0xFFF7A34B)
-// Signature brand gradient: violet -> pink -> orange
-val AccentGradient = Brush.linearGradient(listOf(Accent, AccentPink, AccentOrange))
 val AccentEnd = AccentPink // legacy alias
 
 // --- Semantic ---
@@ -54,15 +66,15 @@ val BlueTint = Color(0xFFEAF0FC)
 // InstaGradient (= InstaPurple/Red/Orange) becomes the violet
 // -> pink -> orange brand gradient automatically.
 // ============================================================
-val InstaPurple = Accent
+val InstaPurple: Color get() = Accent
 val InstaRed = AccentPink
 val InstaOrange = AccentOrange
-val BrandAccent = Accent
+val BrandAccent: Color get() = Accent
 
 // Material role holders (referenced by Theme.kt)
 val Purple80 = AccentBright
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
-val Purple40 = Accent
+val Purple40: Color get() = Accent
 val PurpleGrey40 = LayerCard
 val Pink40 = AccentPink

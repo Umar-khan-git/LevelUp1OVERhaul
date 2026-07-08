@@ -9,8 +9,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val LightColorScheme =
-  lightColorScheme(
+@Composable
+fun MyApplicationTheme(
+  darkTheme: Boolean = false, // Bright light theme
+  dynamicColor: Boolean = false, // Disable dynamic color to keep our accent
+  content: @Composable () -> Unit,
+) {
+  // Built here (not a top-level val) so it re-reads the runtime Accent when the theme changes.
+  val colorScheme = lightColorScheme(
     primary = Accent,
     secondary = AccentEnd,
     tertiary = AccentEnd,
@@ -21,14 +27,6 @@ private val LightColorScheme =
     primaryContainer = Accent,
     onPrimaryContainer = Color.White
   )
-
-@Composable
-fun MyApplicationTheme(
-  darkTheme: Boolean = false, // Bright light theme
-  dynamicColor: Boolean = false, // Disable dynamic color to keep the Sunset accent
-  content: @Composable () -> Unit,
-) {
-  val colorScheme = LightColorScheme
 
   // Dark status-bar icons so the clock/battery stay visible on the light background.
   val view = LocalView.current

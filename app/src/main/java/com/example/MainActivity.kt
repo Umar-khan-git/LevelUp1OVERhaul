@@ -86,6 +86,8 @@ import com.example.ui.theme.SleepNavyDark
 import com.example.ui.theme.AccountBlue
 import com.example.ui.theme.AccentPink
 import com.example.ui.theme.AccountTeal
+import com.example.ui.theme.AccentTheme
+import com.example.ui.theme.ThemeState
 import com.example.ui.theme.GreenTint
 import com.example.ui.theme.CardOutline
 import android.graphics.BitmapFactory
@@ -125,6 +127,11 @@ class MainActivity : ComponentActivity() {
         ).addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8).fallbackToDestructiveMigration().build()
 
         repository = DashboardRepository(database.dashboardDao())
+
+        // Load saved accent theme
+        ThemeState.current = AccentTheme.fromKey(
+            applicationContext.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE).getString("accent_theme", "violet")
+        )
 
         // ViewModel Factory
         val rpgPrefs = applicationContext.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE)
@@ -520,9 +527,7 @@ fun GuideTip(
 
 
 // Global gradient brush
-val InstaGradient = Brush.linearGradient(
-    colors = listOf(InstaPurple, InstaRed, InstaOrange)
-)
+val InstaGradient: Brush get() = AccentGradient
 
 @Composable
 fun GradientText(
@@ -789,6 +794,21 @@ fun SettingsButton(viewModel: DashboardViewModel) {
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text("Settings", color = PrimaryText, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("ACCENT THEME", color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        AccentTheme.entries.forEach { t ->
+                            val sel = ThemeState.current == t
+                            Box(
+                                modifier = Modifier.size(42.dp).clip(CircleShape).background(t.gradient)
+                                    .border(if (sel) 3.dp else 1.dp, if (sel) PrimaryText.copy(alpha = 0.6f) else DividerColor, CircleShape)
+                                    .clickable {
+                                        ThemeState.current = t
+                                        context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE).edit().putString("accent_theme", t.key).apply()
+                                    }
+                            )
+                        }
+                    }
+                    HorizontalDivider(color = DividerColor)
                     Text(
                         "Back up everything — habits, money, goals, sleep, roadmaps — to a file you can save to Drive or share. Restore it anytime, on a new phone or after reinstalling.",
                         color = MutedText, fontSize = 12.sp, lineHeight = 17.sp
