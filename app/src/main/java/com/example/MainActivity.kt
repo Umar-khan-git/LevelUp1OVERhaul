@@ -76,6 +76,7 @@ import com.example.ui.theme.Accent
 import com.example.ui.theme.AccentGradient
 import com.example.ui.theme.DividerColor
 import com.example.ui.theme.PrimaryText
+import com.example.ui.theme.SecondaryText
 import com.example.ui.theme.ChipBg
 import com.example.ui.theme.TertiaryText
 import com.example.ui.theme.NegativeRed
@@ -336,7 +337,7 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
             ) {
                 Text(
                     text = if (isLast) "Get Started →" else "Next →",
-                    color = PrimaryText,
+                    color = if (isLast && userName.isNotBlank()) Color.White else PrimaryText,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Black
                 )
@@ -346,7 +347,7 @@ fun OnboardingScreen(onComplete: (String) -> Unit) {
                     onClick = { scope.launch { pagerState.animateScrollToPage(2) } },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Skip", color = DividerColor, fontSize = 12.sp)
+                    Text("Skip", color = MutedText, fontSize = 12.sp)
                 }
             }
         }
@@ -362,23 +363,29 @@ fun OnboardPage1() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("⚡", fontSize = 72.sp)
-        Spacer(modifier = Modifier.height(20.dp))
+        Box(
+            modifier = Modifier.size(96.dp).clip(RoundedCornerShape(28.dp)).background(AccentGradient),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Bolt, contentDescription = null, tint = Color.White, modifier = Modifier.size(52.dp))
+        }
+        Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = "LevelUp",
-            style = TextStyle(brush = InstaGradient, fontSize = 52.sp, fontWeight = FontWeight.Black, letterSpacing = (-2).sp)
+            style = TextStyle(brush = InstaGradient, fontSize = 48.sp, fontWeight = FontWeight.Black, letterSpacing = (-2).sp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Your Self-Improvement Hub",
+            "Your self-improvement hub",
             color = MutedText,
             fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(28.dp))
         Text(
-            "Build habits. Crush goals. Track sleep.\nMaster your finances. All in one place.",
-            color = DividerColor,
+            "Build habits. Crush goals. Track sleep.\nMaster your money — all in one place.",
+            color = SecondaryText,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
             lineHeight = 22.sp
@@ -389,10 +396,10 @@ fun OnboardPage1() {
 @Composable
 fun OnboardPage2() {
     val features = listOf(
-        Triple("🎯", "Habits & Goals", "Daily habit streaks + a point-based goal tracking system"),
-        Triple("💰", "Finance Tracker", "Log income, expenses and transfers — see where money goes"),
-        Triple("😴", "Sleep Tracker", "Log sleep times and track your weekly sleep quality"),
-        Triple("📚", "Learn & Vocab", "Build your personal knowledge and vocabulary library")
+        Triple(Icons.Default.TrackChanges, "Habits & Goals", "Daily habit streaks + a point-based goal tracker"),
+        Triple(Icons.Default.AccountBalanceWallet, "Finance Tracker", "Log income, expenses and transfers"),
+        Triple(Icons.Default.Bedtime, "Sleep Tracker", "Log sleep and track your weekly quality"),
+        Triple(Icons.Default.MenuBook, "Learn & Vocab", "Build your knowledge and vocabulary")
     )
     Column(
         modifier = Modifier
@@ -411,10 +418,16 @@ fun OnboardPage2() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.dp),
-                verticalAlignment = Alignment.Top
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(icon, fontSize = 26.sp, modifier = Modifier.padding(end = 14.dp, top = 2.dp))
+                Box(
+                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Accent.copy(alpha = 0.14f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(icon, contentDescription = null, tint = Accent, modifier = Modifier.size(22.dp))
+                }
+                Spacer(Modifier.width(14.dp))
                 Column {
                     Text(title, color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     Text(desc, color = MutedText, fontSize = 12.sp, lineHeight = 17.sp)

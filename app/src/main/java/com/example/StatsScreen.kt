@@ -15,6 +15,17 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -107,9 +118,20 @@ fun CharacterHexNodes(
             val angle = Math.toRadians((-90 + i * 60).toDouble())
             val dx = (radius.value * Math.cos(angle)).dp
             val dy = (radius.value * Math.sin(angle)).dp
+            val appear = remember { Animatable(0f) }
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(i * 70L)
+                appear.animateTo(1f, animationSpec = tween(420, easing = FastOutSlowInEasing))
+            }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.align(Alignment.Center).offset(x = dx, y = dy)
+                    .graphicsLayer {
+                        val sc = 0.7f + 0.3f * appear.value
+                        scaleX = sc
+                        scaleY = sc
+                        alpha = appear.value
+                    }
             ) {
                 Box(
                     modifier = Modifier.size(54.dp).clip(CircleShape).background(LayerCard)
@@ -125,9 +147,15 @@ fun CharacterHexNodes(
                 Text(s.label, color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Medium)
             }
         }
-        // center avatar (tap to add/change photo)
+        // center avatar (tap to add/change photo) — gentle pulse
+        val pulse = rememberInfiniteTransition(label = "pulse")
+        val pulseScale by pulse.animateFloat(
+            initialValue = 1f, targetValue = 1.04f,
+            animationSpec = infiniteRepeatable(tween(1600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+            label = "pulseScale"
+        )
         Box(
-            modifier = Modifier.size(76.dp).clip(CircleShape).background(AccentGradient)
+            modifier = Modifier.size(76.dp).graphicsLayer { scaleX = pulseScale; scaleY = pulseScale }.clip(CircleShape).background(AccentGradient)
                 .clickable { onAvatarTap() },
             contentAlignment = Alignment.Center
         ) {
