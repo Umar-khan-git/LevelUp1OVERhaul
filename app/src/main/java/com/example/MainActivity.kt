@@ -1981,6 +1981,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
     var itemName by remember { mutableStateOf("") }
     var itemSubtext by remember { mutableStateOf("") }
     var itemCategory by remember { mutableStateOf("IT") }
+    var itemLang by remember { mutableStateOf("") }
 
     var wordOriginal by remember { mutableStateOf("") }
     var wordEnglish by remember { mutableStateOf("") }
@@ -2003,7 +2004,13 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                 .padding(vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            val subTabs = listOf("ALL", "IT", "ARABIC", "JAPANESE", "VOCABULARY", "COURSES")
+            val subTabs = run {
+                val langs = (learningItems.map { it.category } + wordsList.map { it.category })
+                    .map { it.uppercase() }
+                    .filter { it !in listOf("IT", "COURSES", "LANGUAGES", "ENGLISH") }
+                    .distinct()
+                listOf("ALL", "IT") + langs + listOf("VOCABULARY", "COURSES")
+            }
             subTabs.forEach { tab ->
                 val active = tab == activeSubTab
                 Surface(
@@ -2063,10 +2070,7 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
         ) {
             // Render learning items
             val filteredLearning = learningItems.filter {
-                activeSubTab == "ALL" || 
-                it.category == activeSubTab ||
-                (activeSubTab == "ARABIC" && it.category == "LANGUAGES" && it.name.contains("arabic", ignoreCase = true)) ||
-                (activeSubTab == "JAPANESE" && it.category == "LANGUAGES" && it.name.contains("japanese", ignoreCase = true))
+                activeSubTab == "ALL" || it.category.equals(activeSubTab, ignoreCase = true)
             }
 
             if (filteredLearning.isNotEmpty()) {
@@ -2111,15 +2115,12 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
 
             // Render Words lists
             val filteredWords = wordsList.filter {
-                activeSubTab == "ALL" ||
-                        (activeSubTab == "ARABIC" && it.category == "ARABIC") ||
-                        (activeSubTab == "JAPANESE" && it.category == "JAPANESE") ||
-                        (activeSubTab == "VOCABULARY" && it.category == "ENGLISH")
+                activeSubTab == "ALL" || activeSubTab == "VOCABULARY" || it.category.equals(activeSubTab, ignoreCase = true)
             }
 
             if (filteredWords.isNotEmpty()) {
                 val groupedWords = filteredWords.groupBy { it.category }
-                val sortedCategories = listOf("ARABIC", "JAPANESE", "ENGLISH")
+                val sortedCategories = groupedWords.keys.toList()
                 
                 sortedCategories.forEach { cat ->
                     val list = groupedWords[cat]
@@ -2257,6 +2258,15 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                         }
                     }
 
+                    if (itemCategory == "LANGUAGES") {
+                        OutlinedTextField(
+                            value = itemLang,
+                            onValueChange = { itemLang = it },
+                            placeholder = { Text("Language (e.g., Tagalog)", color = MutedText) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -2264,9 +2274,11 @@ fun LearningTabScreen(viewModel: DashboardViewModel) {
                         Button(
                             onClick = {
                                 if (itemName.isNotBlank()) {
-                                    viewModel.addLearning(itemName, itemSubtext, itemCategory, "ACTIVE")
+                                    val finalCat = if (itemCategory == "LANGUAGES") itemLang.trim().ifBlank { "LANGUAGES" }.uppercase() else itemCategory
+                                    viewModel.addLearning(itemName, itemSubtext, finalCat, "ACTIVE")
                                     itemName = ""
                                     itemSubtext = ""
+                                    itemLang = ""
                                     showAddItem = false
                                 }
                             },
