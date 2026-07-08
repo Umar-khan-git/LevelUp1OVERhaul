@@ -86,6 +86,8 @@ import com.example.ui.theme.SleepNavyDark
 import com.example.ui.theme.AccountBlue
 import com.example.ui.theme.AccentPink
 import com.example.ui.theme.AccountTeal
+import com.example.ui.theme.GreenTint
+import com.example.ui.theme.CardOutline
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -925,6 +927,7 @@ data class TabItem(val id: String, val label: String, val icon: androidx.compose
 // ============================================
 // TODAY TAB SCREEN
 // ============================================
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun TodayTabScreen(viewModel: DashboardViewModel) {
     val context = LocalContext.current
@@ -968,6 +971,42 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                 )
             }
         }
+        // Progress donut
+        item {
+            val doneCount = habits.count { it.isCompleted }
+            val totalCount = habits.size
+            val pct = if (totalCount > 0) doneCount * 100 / totalCount else 0
+            Card(
+                colors = CardDefaults.cardColors(containerColor = LayerCard),
+                shape = RoundedCornerShape(22.dp),
+                border = BorderStroke(1.dp, BorderHighlight),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(92.dp)) {
+                        Canvas(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+                            val sw = 11.dp.toPx()
+                            drawArc(ChipBg, -90f, 360f, false, style = Stroke(sw, cap = StrokeCap.Round))
+                            drawArc(Accent, -90f, pct * 3.6f, false, style = Stroke(sw, cap = StrokeCap.Round))
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("$pct%", color = PrimaryText, fontSize = 22.sp, fontWeight = FontWeight.Black)
+                            Text("done", color = MutedText, fontSize = 10.sp)
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("$doneCount of $totalCount habits", color = PrimaryText, fontSize = 17.sp, fontWeight = FontWeight.Black)
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            if (totalCount == 0) "Add a habit to get started." else if (doneCount >= totalCount) "All done — great work!" else "${totalCount - doneCount} more to keep your streak alive.",
+                            color = MutedText, fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+        }
+
         // Section: Daily Habits
         item {
             Row(
@@ -976,11 +1015,11 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Daily Habits Logs",
-                    color = PrimaryText,
-                    fontSize = 14.sp,
+                    text = "HABITS",
+                    color = MutedText,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
+                    letterSpacing = 1.5.sp
                 )
                 IconButton(onClick = { showAddHabit = true }) {
                     Icon(Icons.Default.Add, contentDescription = "Add Habit", tint = BrandAccent)
@@ -989,111 +1028,48 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
         }
 
         item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = LayerCard),
-                shape = RoundedCornerShape(24.dp),
-                border = BorderStroke(1.dp, BorderHighlight),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+            if (habits.isEmpty()) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = LayerCard),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, BorderHighlight),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (habits.isEmpty()) {
-                        Text(
-                            text = "No habits. Add logs above!",
-                            color = MutedText,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(vertical = 12.dp)
-                        )
-                    } else {
-                        habits.forEach { habit ->
+                    Text("No habits yet. Tap + to add one.", color = MutedText, fontSize = 13.sp, modifier = Modifier.padding(16.dp))
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    habits.forEach { habit ->
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = if (habit.isCompleted) GreenTint else LayerCard),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, if (habit.isCompleted) PositiveGreen.copy(alpha = 0.35f) else BorderHighlight),
+                            modifier = Modifier.fillMaxWidth().combinedClickable(
+                                onClick = { viewModel.toggleHabit(habit) },
+                                onLongClick = { editingHabit = habit }
+                            )
+                        ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.toggleHabit(habit) }
-                                    .padding(vertical = 4.dp),
+                                modifier = Modifier.fillMaxWidth().padding(14.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Row(
-                                    modifier = Modifier.weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .clip(CircleShape)
-                                            .background(
-                                                if (habit.isCompleted) InstaGradient else Brush.linearGradient(
-                                                    listOf(ChipBg, ChipBg)
-                                                )
-                                            )
-                                            .padding(4.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (habit.isCompleted) {
-                                            Icon(
-                                                Icons.Default.Check,
-                                                contentDescription = "Completed",
-                                                tint = PrimaryText,
-                                                modifier = Modifier.size(14.dp)
-                                            )
+                                Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    if (habit.isCompleted) {
+                                        Box(modifier = Modifier.size(28.dp).clip(RoundedCornerShape(9.dp)).background(PositiveGreen), contentAlignment = Alignment.Center) {
+                                            Icon(Icons.Default.Check, contentDescription = "Completed", tint = Color.White, modifier = Modifier.size(16.dp))
                                         }
+                                    } else {
+                                        Box(modifier = Modifier.size(28.dp).clip(CircleShape).border(2.dp, CardOutline, CircleShape))
                                     }
-
-                                    Text(
-                                        text = habit.name,
-                                        color = if (habit.isCompleted) MutedText else PrimaryText,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 1
-                                    )
+                                    Text(habit.name, color = PrimaryText, fontSize = 15.sp, fontWeight = FontWeight.Medium, overflow = TextOverflow.Ellipsis, maxLines = 1)
                                 }
-
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                                     if (!habit.isCompleted && rpgPrefs.getBoolean("grace_${habit.id}", false)) {
-                                        Icon(
-                                            Icons.Default.Shield,
-                                            contentDescription = "streak protected",
-                                            tint = MutedText,
-                                            modifier = Modifier.padding(end = 3.dp).size(12.dp)
-                                        )
+                                        Icon(Icons.Default.Shield, contentDescription = "streak protected", tint = MutedText, modifier = Modifier.size(12.dp))
                                     }
-                                    if (habit.streak > 0) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(end = 4.dp)
-                                        ) {
-                                            Icon(Icons.Default.LocalFireDepartment, contentDescription = null, tint = StreakOrange, modifier = Modifier.size(12.dp))
-                                            Spacer(Modifier.width(2.dp))
-                                            Text(text = "${habit.streak}", color = StreakOrange, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                        }
-                                    }
-                                    IconButton(
-                                        onClick = { editingHabit = habit },
-                                        modifier = Modifier.size(28.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Edit,
-                                            contentDescription = "Edit",
-                                            tint = MutedText.copy(alpha = 0.6f),
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = { viewModel.deleteHabit(habit.id) },
-                                        modifier = Modifier.size(28.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = "Delete",
-                                            tint = Color.Red.copy(alpha = 0.6f),
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
+                                    Icon(Icons.Default.LocalFireDepartment, contentDescription = null, tint = if (habit.isCompleted) StreakOrange else MutedText, modifier = Modifier.size(14.dp))
+                                    Text("${habit.streak}", color = if (habit.isCompleted) StreakOrange else MutedText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -1110,11 +1086,11 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Daily Intent (Non-negotiables)",
-                    color = PrimaryText,
-                    fontSize = 14.sp,
+                    text = "NON-NEGOTIABLES",
+                    color = MutedText,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
+                    letterSpacing = 1.5.sp
                 )
                 IconButton(onClick = { showAddIntent = true }) {
                     Icon(Icons.Default.Add, contentDescription = "Add Intent", tint = BrandAccent)
