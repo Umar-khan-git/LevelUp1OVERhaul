@@ -454,26 +454,24 @@ fun TransactionsSubScreen(
         }
         val currentBalance = totalIncome - totalExpense
 
-        Row(
+        // Net-this-month hero (design parity)
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(LayerCard)
-                .border(BorderStroke(1.dp, BorderHighlight))
-                .padding(vertical = 10.dp, horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .background(PositiveGreen, shape = RoundedCornerShape(20.dp))
+                .padding(18.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Income", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Text(String.format("DH %,.2f", totalIncome), color = BlueIncome, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Expenses", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Text(String.format("DH %,.2f", totalExpense), color = RedExpense, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Total", color = MutedText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Text(String.format("DH %,.2f", currentBalance), color = PrimaryText, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text("Net this month", color = Color.White.copy(alpha = 0.85f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                (if (currentBalance >= 0) "+" else "-") + String.format("DH %,.0f", kotlin.math.abs(currentBalance)),
+                color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Black
+            )
+            Spacer(Modifier.height(10.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Income  " + String.format("DH %,.0f", totalIncome), color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Text("Spent  " + String.format("DH %,.0f", totalExpense), color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
         }
 

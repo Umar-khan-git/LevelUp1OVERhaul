@@ -1459,6 +1459,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
 
     var editingGoal by remember { mutableStateOf<GoalEntity?>(null) }
     var editingLog by remember { mutableStateOf<PointLogEntity?>(null) }
+    var goalFilter by remember { mutableStateOf("ACTIVE") }
 
     LazyColumn(
         modifier = Modifier
@@ -1496,8 +1497,25 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
             }
         }
 
-        // Active Goals
-        items(goals) { goal ->
+        item {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("ACTIVE" to "Active", "NEXT" to "Next", "SOMEDAY" to "Someday").forEach { (st, lbl) ->
+                    val sel = goalFilter == st
+                    Surface(
+                        modifier = Modifier.clickable { goalFilter = st },
+                        color = if (sel) Accent else LayerCard,
+                        shape = RoundedCornerShape(100),
+                        border = BorderStroke(1.dp, if (sel) Accent else DividerColor)
+                    ) {
+                        Text(lbl, color = if (sel) Color.White else MutedText, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                    }
+                }
+            }
+        }
+
+        // Goals (filtered by status)
+        items(goals.filter { it.status.equals(goalFilter, ignoreCase = true) }) { goal ->
+            val goalColor = listOf(AccentPink, Accent, PositiveGreen, AccountBlue, StreakOrange)[((goal.id % 5).toInt() + 5) % 5]
             // Calculate progress cumulative logic
             val currentPoints = remember(pointLogs, goal.id) {
                 pointLogs.filter { it.goalId == goal.id }.sumOf { it.hours.toDouble() }.toFloat() + goal.bonusPoints
@@ -1538,9 +1556,11 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                         }
 
                         Column(horizontalAlignment = Alignment.End) {
-                            GradientText(
+                            Text(
                                 text = "${String.format("%.1f", progressPercent)}%",
-                                style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                color = goalColor,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Black
                             )
                             Text(
                                 text = "${String.format("%.1f", currentPoints)} PTS",
@@ -1562,7 +1582,7 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .fillMaxWidth((progressPercent / 100f).coerceIn(0f, 1f))
-                                .background(InstaGradient, shape = RoundedCornerShape(100))
+                                .background(goalColor, shape = RoundedCornerShape(100))
                         )
                     }
 
