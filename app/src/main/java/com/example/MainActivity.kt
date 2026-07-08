@@ -1415,6 +1415,7 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
 // ============================================
 // GOALS TAB SCREEN
 // ============================================
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun GoalsTabScreen(viewModel: DashboardViewModel) {
     val goals by viewModel.goals.collectAsStateWithLifecycle()
@@ -1504,7 +1505,10 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                 colors = CardDefaults.cardColors(containerColor = LayerCard),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, BorderHighlight),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().combinedClickable(
+                    onClick = { showAddPointsId = goal.id },
+                    onLongClick = { editingGoal = goal }
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(18.dp),
@@ -1562,125 +1566,21 @@ fun GoalsTabScreen(viewModel: DashboardViewModel) {
                         )
                     }
 
-                    // Status Capsules & Action Links
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            color = when (goal.status) {
-                                "ACTIVE" -> InstaPurple.copy(alpha = 0.2f)
-                                "NEXT" -> MutedText.copy(alpha = 0.4f)
-                                else -> InstaOrange.copy(alpha = 0.2f)
-                            },
-                            shape = RoundedCornerShape(6.dp)
-                        ) {
-                            Text(
-                                text = goal.status,
-                                color = when (goal.status) {
-                                    "ACTIVE" -> InstaPurple
-                                    "NEXT" -> MutedText
-                                    else -> InstaOrange
-                                },
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Black,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .background(BrandAccent.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
-                                    .border(1.dp, BrandAccent.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                                    .clickable { showAddPointsId = goal.id }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Text(
-                                    "+ Log Action",
-                                    color = BrandAccent,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Black,
-                                    maxLines = 1,
-                                    softWrap = false
-                                )
-                            }
-
-                            IconButton(
-                                onClick = { editingGoal = goal },
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit",
-                                    tint = MutedText.copy(alpha = 0.6f),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-
-                            IconButton(
-                                onClick = { viewModel.deleteGoal(goal.id) },
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.Red.copy(alpha = 0.6f),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Inline Logs display drawer
+                    // Action-log chips (tap card to add, long-press to edit)
                     val activeLogs = remember(pointLogs, goal.id) {
                         pointLogs.filter { it.goalId == goal.id }
                     }
-
                     if (activeLogs.isNotEmpty()) {
-                        Divider(color = BorderHighlight, thickness = 0.5.dp, modifier = Modifier.padding(vertical = 4.dp))
-                        Text("Action Logs:", color = MutedText, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        activeLogs.take(3).forEach { log ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "- ${log.activity}",
-                                    color = MutedText,
-                                    fontSize = 11.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            activeLogs.take(4).forEach { log ->
+                                Surface(color = ChipBg, shape = RoundedCornerShape(100)) {
                                     Text(
-                                        text = "+${log.hours} hrs/pts",
-                                        color = InstaOrange,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        contentDescription = "Edit Log",
-                                        tint = MutedText.copy(0.5f),
-                                        modifier = Modifier
-                                            .size(13.dp)
-                                            .clickable { editingLog = log }
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Delete Log",
-                                        tint = Color.Red.copy(0.4f),
-                                        modifier = Modifier
-                                            .size(14.dp)
-                                            .clickable { viewModel.deletePointLog(log.id) }
+                                        "+${log.hours.toBigDecimal().stripTrailingZeros().toPlainString()}h ${log.activity}",
+                                        color = MutedText, fontSize = 11.sp, fontWeight = FontWeight.Medium, maxLines = 1,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                     )
                                 }
                             }
