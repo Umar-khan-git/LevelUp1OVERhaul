@@ -24,7 +24,7 @@ import com.example.data.CategoryEntity
 import com.example.data.TransactionEntity
 import com.example.ui.theme.*
 
-private val BudgetAccent = Accent
+private val BudgetAccent get() = Accent
 private val BudgetGood = PositiveGreen
 private val BudgetWarn = StreakOrange
 

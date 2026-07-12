@@ -23,7 +23,7 @@ import com.example.data.MoneyAccountEntity
 import com.example.data.TransactionEntity
 import com.example.ui.theme.*
 
-private val SearchAccent = Accent
+private val SearchAccent get() = Accent
 
 // ============================================
 // SEARCH / FILTER OVERLAY

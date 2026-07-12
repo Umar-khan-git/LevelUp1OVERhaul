@@ -7,64 +7,69 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 // ============================================================
-// UmarOS "Bright" light theme — single source of truth.
-// Values taken from the UmarOS redesign handoff. Composables
-// reference these tokens; raw hex should not appear elsewhere.
+// LevelUp "Editorial" theme — warm ivory + ink (light) and warm
+// near-black (dark), with a single switchable signal accent
+// (default Orange). Surface/text tokens are getters that read
+// ThemeState (dark + accent), so toggling either re-themes the app.
 // ============================================================
 
-// --- Surfaces ---
-val CanvasBg = Color(0xFFF6F4EF)        // warm off-white app background
-val LayerCard = Color(0xFFFFFFFF)       // card surface (soft shadow, no border)
-val BorderHighlight = Color(0x00000000) // no card border in light mode
-val DividerColor = Color(0xFFEAE5DC)    // row dividers inside cards
-val ChipBg = Color(0xFFF0ECE4)          // empty progress track / inactive fill
-val CardOutline = Color(0xFFDAD4C9)     // subtle outline (empty checkbox etc.)
-
-// --- Text ---
-val PrimaryText = Color(0xFF1C1B1A)     // headings / primary text
-val SecondaryText = Color(0xFF57534C)   // body text on cards
-val MutedText = Color(0xFF9A958C)       // secondary / meta text
-val TertiaryText = Color(0xFFB9B3A8)    // disabled / zero-state
-val InactiveIcon = Color(0xFFB4AFA6)    // inactive nav icons / muted glyphs
-
-// --- Primary accent (runtime-switchable via ThemeState) ---
 enum class AccentTheme(val key: String, val label: String, val color: Color, val gradient: Brush) {
+    ORANGE("orange", "Orange", Color(0xFFE8672E), Brush.linearGradient(listOf(Color(0xFFE8672E), Color(0xFFF5934B)))),
     VIOLET("violet", "Violet", Color(0xFF6D5CE7), Brush.linearGradient(listOf(Color(0xFF6D5CE7), Color(0xFF9C4FDC)))),
     OCEAN("ocean", "Ocean", Color(0xFF3A8DDE), Brush.linearGradient(listOf(Color(0xFF3A8DDE), Color(0xFF5BC8C0)))),
     SUNSET("sunset", "Sunset", Color(0xFFE1477E), Brush.linearGradient(listOf(Color(0xFFE1477E), Color(0xFFF7A34B)))),
     EMERALD("emerald", "Emerald", Color(0xFF2FA36B), Brush.linearGradient(listOf(Color(0xFF2FA36B), Color(0xFF7ED957))));
-    companion object { fun fromKey(k: String?): AccentTheme = entries.firstOrNull { it.key == k } ?: VIOLET }
+    companion object { fun fromKey(k: String?): AccentTheme = entries.firstOrNull { it.key == k } ?: ORANGE }
 }
 
-object ThemeState { var current by mutableStateOf(AccentTheme.VIOLET) }
+object ThemeState {
+    var current by mutableStateOf(AccentTheme.ORANGE)
+    var dark by mutableStateOf(false)
+}
 
+private fun pick(light: Long, dark: Long): Color = if (ThemeState.dark) Color(dark) else Color(light)
+
+// --- Surfaces ---
+val CanvasBg: Color get() = pick(0xFFF3EFE7, 0xFF16150F)
+val LayerCard: Color get() = pick(0xFFFCFAF5, 0xFF211F18)
+val BorderHighlight: Color get() = if (ThemeState.dark) Color(0x14FFFFFF) else Color(0x00000000)
+val DividerColor: Color get() = pick(0xFFE7E0D3, 0xFF2A2820)
+val ChipBg: Color get() = pick(0xFFEFE9DE, 0xFF201D17)
+val CardOutline: Color get() = pick(0xFFE0D8C9, 0xFF2E2B22)
+
+// --- Text ---
+val PrimaryText: Color get() = pick(0xFF1C1A17, 0xFFF4F0E8)
+val SecondaryText: Color get() = pick(0xFF57534C, 0xFFC9C2B6)
+val MutedText: Color get() = pick(0xFF8C857A, 0xFF9A9282)
+val TertiaryText: Color get() = pick(0xFFB4AC9E, 0xFF6E685C)
+val InactiveIcon: Color get() = pick(0xFFB4AC9E, 0xFF6E685C)
+
+// --- Accent (switchable) ---
 val Accent: Color get() = ThemeState.current.color
 val AccentGradient: Brush get() = ThemeState.current.gradient
-val AccentBright = Color(0xFF7C5CFF)
-val AccentPink = Color(0xFFE1477E)
-val AccentOrange = Color(0xFFF7A34B)
-val AccentEnd = AccentPink // legacy alias
+val AccentBright = Color(0xFFF5934B)
+val AccentPink = Color(0xFFC56B8E)
+val AccentOrange = Color(0xFFE8672E)
+val AccentEnd = AccentBright
 
-// --- Semantic ---
-val PositiveGreen = Color(0xFF3DA35D)   // income / completed / good
-val NegativeRed = Color(0xFFE1477E)     // expense / debt / bad
-val StreakOrange = Color(0xFFE8722F)    // streak flame
-val SleepNavy = Color(0xFF3B4FA0)       // sleep hero / bars
-val SleepNavyDark = Color(0xFF2A3A78)
-val AccountBlue = Color(0xFF3B7DE0)     // categorical (accounts)
-val AccountTeal = Color(0xFF12A594)     // categorical (accounts)
+// --- Semantic (muted editorial) ---
+val PositiveGreen = Color(0xFF5B8C6E)
+val NegativeRed = Color(0xFFC56B52)
+val StreakOrange = Color(0xFFE8672E)
+val SleepNavy = Color(0xFF2A2F45)
+val SleepNavyDark = Color(0xFF161A2A)
+val AccountBlue = Color(0xFF5E86C7)
+val AccountTeal = Color(0xFF3FA6A0)
 
-// --- Soft tints (row / tile backgrounds) ---
-val GreenTint = Color(0xFFE7F4EC)
-val PinkTint = Color(0xFFFBE9F0)
-val OrangeTint = Color(0xFFFDEEDD)
-val VioletTint = Color(0xFFEEEBFC)
-val BlueTint = Color(0xFFEAF0FC)
+// --- Soft tints (dark-aware) ---
+val GreenTint: Color get() = pick(0xFFE3EDE6, 0xFF1E2A22)
+val PinkTint: Color get() = pick(0xFFF3E4E9, 0xFF2A1E22)
+val OrangeTint: Color get() = pick(0xFFF6E7DB, 0xFF2A2017)
+val VioletTint: Color get() = pick(0xFFEAE6F2, 0xFF221E2A)
+val BlueTint: Color get() = pick(0xFFE6ECF6, 0xFF1A2230)
 
 // ============================================================
-// Back-compat aliases. Existing code references these names;
-// InstaGradient (= InstaPurple/Red/Orange) becomes the violet
-// -> pink -> orange brand gradient automatically.
+// Back-compat aliases (existing code references these names).
 // ============================================================
 val InstaPurple: Color get() = Accent
 val InstaRed = AccentPink
@@ -76,5 +81,5 @@ val Purple80 = AccentBright
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
 val Purple40: Color get() = Accent
-val PurpleGrey40 = LayerCard
+val PurpleGrey40: Color get() = LayerCard
 val Pink40 = AccentPink

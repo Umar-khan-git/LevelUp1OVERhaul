@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val RecAccent = Accent
+private val RecAccent get() = Accent
 
 private fun fmtMoney(v: Double): String = String.format("DH %,.2f", v)
 

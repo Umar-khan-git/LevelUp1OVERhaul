@@ -45,7 +45,7 @@ import kotlin.math.sin
 // Theme helper colors
 val BlueIncome = PositiveGreen
 val RedExpense = NegativeRed
-val DarkGreyBg = CanvasBg
+val DarkGreyBg get() = CanvasBg
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

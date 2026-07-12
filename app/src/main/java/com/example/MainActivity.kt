@@ -129,10 +129,10 @@ class MainActivity : ComponentActivity() {
 
         repository = DashboardRepository(database.dashboardDao())
 
-        // Load saved accent theme
-        ThemeState.current = AccentTheme.fromKey(
-            applicationContext.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE).getString("accent_theme", "violet")
-        )
+        // Load saved accent theme + dark mode
+        val themePrefs = applicationContext.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE)
+        ThemeState.current = AccentTheme.fromKey(themePrefs.getString("accent_theme", "orange"))
+        ThemeState.dark = themePrefs.getBoolean("dark_mode", false)
 
         // ViewModel Factory
         val rpgPrefs = applicationContext.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE)
@@ -820,6 +820,26 @@ fun SettingsButton(viewModel: DashboardViewModel) {
                                     }
                             )
                         }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Dark mode", color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Switch(
+                            checked = ThemeState.dark,
+                            onCheckedChange = { on ->
+                                ThemeState.dark = on
+                                context.getSharedPreferences("levelup_prefs", android.content.Context.MODE_PRIVATE).edit().putBoolean("dark_mode", on).apply()
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = Accent,
+                                uncheckedThumbColor = MutedText,
+                                uncheckedTrackColor = ChipBg
+                            )
+                        )
                     }
                     HorizontalDivider(color = DividerColor)
                     Text(
