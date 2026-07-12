@@ -87,6 +87,7 @@ import com.example.ui.theme.SleepNavyDark
 import com.example.ui.theme.AccountBlue
 import com.example.ui.theme.AccentPink
 import com.example.ui.theme.AccountTeal
+import com.example.ui.theme.MonoFamily
 import com.example.ui.theme.AccentTheme
 import com.example.ui.theme.ThemeState
 import com.example.ui.theme.GreenTint
@@ -988,6 +989,8 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
     var showGuideToday by remember { mutableStateOf(!_guidePrefsToday.getBoolean("guide_today", false)) }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val intents by viewModel.intents.collectAsStateWithLifecycle()
+    val sleepLogs by viewModel.sleepLogs.collectAsStateWithLifecycle()
+    val pointLogs by viewModel.pointLogs.collectAsStateWithLifecycle()
     val rpgPrefs = remember { context.getSharedPreferences("levelup_rpg", android.content.Context.MODE_PRIVATE) }
 
     var showAddHabit by rememberSaveable { mutableStateOf(false) }
@@ -1024,38 +1027,26 @@ fun TodayTabScreen(viewModel: DashboardViewModel) {
                 )
             }
         }
-        // Progress donut
+        // Dashboard metric grid
         item {
             val doneCount = habits.count { it.isCompleted }
             val totalCount = habits.size
             val pct = if (totalCount > 0) doneCount * 100 / totalCount else 0
-            Card(
-                colors = CardDefaults.cardColors(containerColor = LayerCard),
-                shape = RoundedCornerShape(22.dp),
-                border = BorderStroke(1.dp, BorderHighlight),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(92.dp)) {
-                        Canvas(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-                            val sw = 11.dp.toPx()
-                            drawArc(ChipBg, -90f, 360f, false, style = Stroke(sw, cap = StrokeCap.Round))
-                            drawArc(Accent, -90f, pct * 3.6f, false, style = Stroke(sw, cap = StrokeCap.Round))
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("$pct%", color = PrimaryText, fontSize = 22.sp, fontWeight = FontWeight.Black)
-                            Text("done", color = MutedText, fontSize = 10.sp)
-                        }
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("$doneCount of $totalCount habits", color = PrimaryText, fontSize = 17.sp, fontWeight = FontWeight.Black)
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            if (totalCount == 0) "Add a habit to get started." else if (doneCount >= totalCount) "All done — great work!" else "${totalCount - doneCount} more to keep your streak alive.",
-                            color = MutedText, fontSize = 13.sp
-                        )
-                    }
+            val lastSleep = sleepLogs.firstOrNull()
+            val sleepStr = if (lastSleep != null) { val h = lastSleep.hoursSlept.toInt(); val m = Math.round((lastSleep.hoursSlept - h) * 60f); "${h}h ${m}m" } else "—"
+            val todayKey = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+            val focusH = pointLogs.filter { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date(it.dateAdded)) == todayKey }.sumOf { it.hours.toDouble() }
+            val focusStr = run { val h = focusH.toInt(); val m = Math.round((focusH - h) * 60f); if (h > 0) "${h}h ${m}m" else "${m}m" }
+            val xpToday = doneCount * 20 + (focusH * 10).toInt()
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("YOUR DASHBOARD", color = MutedText, fontFamily = MonoFamily, fontSize = 10.sp, letterSpacing = 1.5.sp)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DashDial(pct, "$doneCount of $totalCount habits", Icons.Default.TrackChanges, Modifier.weight(1f))
+                    DashMetric(sleepStr, "Sleep", "LAST NIGHT", Icons.Default.Bedtime, AccountBlue, Modifier.weight(1f))
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DashMetric("+$xpToday", "XP today", "KEEP GOING", Icons.Default.Bolt, Accent, Modifier.weight(1f))
+                    DashMetric(focusStr, "Focus", "DEEP WORK", Icons.Default.Schedule, PositiveGreen, Modifier.weight(1f))
                 }
             }
         }

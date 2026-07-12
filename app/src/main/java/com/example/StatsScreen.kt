@@ -246,3 +246,58 @@ fun XpWeekChart(series: List<Float>, deltaXp: Int) {
         }
     }
 }
+
+
+/** Today dashboard: completion dial widget. */
+@Composable
+fun DashDial(percent: Int, subtitle: String, icon: ImageVector, modifier: Modifier = Modifier) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = LayerCard),
+        shape = RoundedCornerShape(22.dp),
+        border = BorderStroke(1.dp, BorderHighlight),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("TODAY", color = MutedText, fontFamily = MonoFamily, fontSize = 10.sp, letterSpacing = 1.sp)
+                Box(modifier = Modifier.size(26.dp).clip(CircleShape).background(Accent.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+                    Icon(icon, contentDescription = null, tint = Accent, modifier = Modifier.size(15.dp))
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(72.dp)) {
+                Canvas(modifier = Modifier.fillMaxSize().padding(5.dp)) {
+                    val sw = 9.dp.toPx()
+                    drawArc(ChipBg, -90f, 360f, false, style = Stroke(sw, cap = StrokeCap.Round))
+                    drawArc(Accent, -90f, percent * 3.6f, false, style = Stroke(sw, cap = StrokeCap.Round))
+                }
+                Text("$percent%", color = PrimaryText, fontFamily = DisplayFamily, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(subtitle, color = MutedText, fontSize = 12.sp)
+        }
+    }
+}
+
+/** Today dashboard: single metric widget (icon + big value + label + mono sub). */
+@Composable
+fun DashMetric(value: String, label: String, sub: String, icon: ImageVector, tint: Color, modifier: Modifier = Modifier) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = LayerCard),
+        shape = RoundedCornerShape(22.dp),
+        border = BorderStroke(1.dp, BorderHighlight),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Box(modifier = Modifier.size(26.dp).clip(CircleShape).background(tint.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(15.dp))
+            }
+            Spacer(Modifier.height(14.dp))
+            Text(value, color = PrimaryText, fontFamily = DisplayFamily, fontWeight = FontWeight.ExtraBold, fontSize = 26.sp, maxLines = 1)
+            Text(label, color = PrimaryText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            Text(sub, color = MutedText, fontFamily = MonoFamily, fontSize = 10.sp, letterSpacing = 0.5.sp, maxLines = 1)
+        }
+    }
+}
