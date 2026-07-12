@@ -1,10 +1,12 @@
 package com.example.ui.theme
 
 import android.app.Activity
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
@@ -56,7 +58,13 @@ fun MyApplicationTheme(
 
   MaterialTheme(
     colorScheme = colorScheme,
-    typography = Typography,
-    content = content
-  )
+    typography = Typography
+  ) {
+    // Make Hanken Grotesk the default for any Text that doesn't set its own family.
+    CompositionLocalProvider(
+      LocalTextStyle provides LocalTextStyle.current.copy(fontFamily = BodyFamily)
+    ) {
+      content()
+    }
+  }
 }
