@@ -909,66 +909,58 @@ fun BottomNavBar(
     selectedTab: String,
     onTabSelected: (String) -> Unit
 ) {
-    Surface(
+    val tabItems = listOf(
+        TabItem("today", "Today", Icons.Default.Home),
+        TabItem("goals", "Goals", Icons.Default.TrackChanges),
+        TabItem("learning", "Learn", Icons.Default.MenuBook),
+        TabItem("stats", "Stats", Icons.Default.BarChart),
+        TabItem("sleep", "Sleep", Icons.Default.DarkMode),
+        TabItem("finance", "Money", Icons.Default.AccountBalanceWallet),
+        TabItem("week", "Week", Icons.Default.CalendarMonth)
+    )
+    val onPill = CanvasBg
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.navigationBars),
-        color = LayerCard,
-        border = BorderStroke(1.dp, DividerColor)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(top = 6.dp, bottom = 10.dp),
+        contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(100))
+                .background(PrimaryText)
+                .padding(horizontal = 6.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            val tabItems = listOf(
-                TabItem("today", "Today", Icons.Default.Home),
-                TabItem("goals", "Goals", Icons.Default.TrackChanges),
-                TabItem("learning", "Learn", Icons.Default.MenuBook),
-                TabItem("stats", "Stats", Icons.Default.BarChart),
-                TabItem("sleep", "Sleep", Icons.Default.DarkMode),
-                TabItem("finance", "Money", Icons.Default.AccountBalanceWallet),
-                TabItem("week", "Week", Icons.Default.CalendarMonth)
-            )
-
             tabItems.forEach { item ->
                 val isSelected = selectedTab == item.id
-                val navColor by animateColorAsState(
-                    targetValue = if (isSelected) Accent else MutedText,
-                    animationSpec = tween(250), label = "navColor_${item.id}"
-                )
-                val indicatorWidth by animateDpAsState(
-                    targetValue = if (isSelected) 34.dp else 0.dp,
-                    animationSpec = tween(250, easing = FastOutSlowInEasing), label = "navInd_${item.id}"
-                )
-                Column(
-                    modifier = Modifier
-                        .clickable { onTabSelected(item.id) }
-                        .weight(1f)
-                        .testTag("nav_${item.id}"),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                if (isSelected) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(100))
+                            .background(Accent)
+                            .clickable { onTabSelected(item.id) }
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .testTag("nav_${item.id}"),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(item.icon, contentDescription = item.label, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(item.label, color = Color.White, fontFamily = MonoFamily, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    }
+                } else {
                     Box(
                         modifier = Modifier
-                            .width(indicatorWidth)
-                            .height(6.dp)
-                            .background(InstaGradient, shape = RoundedCornerShape(100))
-                    )
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label,
-                        tint = navColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = item.label,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = navColor
-                    )
+                            .clip(CircleShape)
+                            .clickable { onTabSelected(item.id) }
+                            .padding(9.dp)
+                            .testTag("nav_${item.id}"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(item.icon, contentDescription = item.label, tint = onPill.copy(alpha = 0.55f), modifier = Modifier.size(18.dp))
+                    }
                 }
             }
         }
